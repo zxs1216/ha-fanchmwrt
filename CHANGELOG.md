@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.0.4 — 修复启动报错
+
+### 修复
+
+- `NameError: name 'ap_info' is not defined`（`coordinator/device_registry.py`）
+- 原因：v3.0.3 删除 radio / SSID 注册块时，连带移除了 `ap_info` 与 `radio_info` 的定义，但后续 `active_identifiers` 计算与孤儿设备清理仍引用这两个变量
+- 处理：在精简模式下将两者定义为空字典，保持下游逻辑不变且不再生成任何 AP / radio 标识
+
+### 校验
+
+- `compileall` 通过
+- 逐个比对被删块内定义的 16 个局部变量，确认全部已重新定义、为循环变量或仅存在于注释
+
 ## v3.0.3 — 旁路由精简：只保留路由器主设备
 
 ### 移除的设备条目

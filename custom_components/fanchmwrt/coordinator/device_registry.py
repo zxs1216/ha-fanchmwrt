@@ -272,6 +272,10 @@ class DeviceRegistryMixin(_Base):
 
         # 旁路由精简模式：不注册 Wireless Radio / Wireless SSID 设备。
         # 这些设备仅在主路由提供无线接入时才有意义。
+        # 下方的 active_identifiers 计算与孤儿设备清理仍会引用这两个字典，
+        # 因此保持为空集合而非删除变量。
+        radio_info: dict[str, str] = {}
+        ap_info: dict[str, tuple[str, str]] = {}
 
         self._async_reparent_connected_devices(data, device_registry)
 
