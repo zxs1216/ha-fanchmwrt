@@ -1,6 +1,409 @@
 {
+  "config": {
+    "step": {
+      "user": {
+        "title": "FanchmWrt 设置",
+        "description": "连接你的 FanchmWrt 路由器（ubus）。[了解更多]({docs_url})。",
+        "data": {
+          "host": "主机地址",
+          "username": "用户名",
+          "password": "密码"
+        }
+      },
+      "discovery": {
+        "title": "正在搜索 FanchmWrt",
+        "description": "正在扫描网络中的 FanchmWrt 路由器… {discovery_info}",
+        "data": {
+          "next": "继续使用自动发现"
+        }
+      },
+      "select_device": {
+        "title": "选择你的路由器",
+        "description": "发现多个 FanchmWrt 设备。请选择要配置的设备：\n\n{public_info}",
+        "data": {
+          "device": "选择设备（或手动输入信息）"
+        }
+      },
+      "manual_entry": {
+        "title": "手动配置",
+        "description": "未自动检测到路由器，或你选择了手动输入。请提供路由器的连接信息。",
+        "data": {
+          "host": "主机地址（IP 或主机名）",
+          "connection_type": "连接方式"
+        }
+      },
+      "credentials": {
+        "title": "身份验证",
+        "description": "输入 **{host}** 的 **{connection_type}** 凭据。\n\n注意：端口留空将使用默认值。",
+        "data": {
+          "username": "用户名",
+          "password": "密码",
+          "use_ssl": "使用 SSL/HTTPS",
+          "verify_ssl": "验证 SSL 证书",
+          "port": "端口",
+          "ubus_path": "Ubus 路径（如 /ubus）",
+          "dhcp_software": "DHCP 软件",
+          "skip_random_mac": "忽略使用随机 MAC 的设备"
+        }
+      },
+      "ssh": {
+        "title": "SSH 身份验证",
+        "description": "输入 {host} 的 SSH 凭据。\n\n注意：端口留空将使用默认值 22。",
+        "data": {
+          "username": "用户名",
+          "password": "密码",
+          "ssh_key": "SSH 私钥（可选，填写后密码留空）",
+          "port": "端口",
+          "dhcp_software": "DHCP 软件",
+          "skip_random_mac": "忽略使用随机 MAC 的设备"
+        }
+      },
+      "reauth_confirm": {
+        "title": "重新验证",
+        "description": "FanchmWrt 路由器的凭据已失效。请输入新密码。",
+        "data": {
+          "username": "用户名",
+          "password": "密码"
+        }
+      },
+      "confirm_discovery": {
+        "title": "已发现路由器",
+        "description": "是否设置 {name}（{host}）？将通过 **{method}** 建立连接。\n\n将自动检测可用功能。",
+        "data": {
+          "username": "用户名",
+          "password": "密码",
+          "use_ssl": "使用 SSL (HTTPS)",
+          "port": "端口（可选）",
+          "dhcp_software": "DHCP 软件",
+          "skip_random_mac": "忽略使用随机 MAC 的设备"
+        }
+      },
+      "permissions": {
+        "title": "权限摘要",
+        "description": "根据用户 **{username}** 的凭据，检测到以下权限：\n\n{permissions_table}",
+        "data": {
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "permissions_ubus": {
+        "title": "权限摘要",
+        "description": "根据用户 **{username}** 的凭据，检测到以下权限：\n\n{permissions_table}",
+        "data": {
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "packages": {
+        "title": "软件包摘要与功能选择",
+        "description": "在路由器上检测到以下可选软件包。缺少的软件包可能导致部分功能不可用。",
+        "data": {
+          "track_devices": "启用设备跟踪",
+          "enable_load": "启用系统负载监控",
+          "enable_services": "启用服务监控与控制",
+          "enable_firewall": "启用防火墙监控与控制",
+          "enable_led": "启用 LED 控制",
+          "enable_sqm": "启用 SQM QoS 控制",
+          "enable_vpn": "启用 VPN 监控与控制",
+          "enable_nlbwmon_sensors": "启用 NLBWMon 流量排行传感器",
+          "enable_snort_sensors": "启用 Snort IDS 传感器",
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "provision_user": {
+        "title": "安全用户配置",
+        "description": "你当前以 **root** 身份连接。出于安全考虑，强烈建议创建一个权限受限的专用用户。",
+        "data": {
+          "mode": "你想如何继续？"
+        }
+      },
+      "reuse_user": {
+        "title": "现有用户凭据",
+        "description": "请输入路由器上现有 **homeassistant** 用户的密码。",
+        "data": {
+          "password": "密码"
+        }
+      },
+      "display_new_user": {
+        "title": "用户创建成功",
+        "description": "已在 FanchmWrt 路由器上创建新用户：\n\n**用户名：** {username}\n**密码：** {password}",
+        "data": {
+          "use_new_user": "立即切换到新用户"
+        }
+      },
+      "provision_failed": {
+        "title": "用户配置失败",
+        "description": "自动创建用户失败。\n\n**分析：**\n{tip}\n\n**原始错误输出：**\n```\n{error}\n```"
+      },
+      "diagnostics": {
+        "title": "连接诊断",
+        "description": "已执行连接测试并发现以下问题。请查看报告：\n\n{diagnostics_report}",
+        "data": {
+          "run_repair": "尝试通过 SSH 自动修复（启动服务 / 安装缺失软件包）"
+        }
+      },
+      "repair_credentials": {
+        "title": "用于修复的 SSH 凭据",
+        "description": "执行自动修复需要通过 SSH 以 root 访问路由器。请提供凭据。",
+        "data": {
+          "username": "用户名",
+          "password": "密码（使用 SSH 密钥时可留空）",
+          "port": "SSH 端口"
+        }
+      },
+      "repair_failed": {
+        "title": "自动修复失败",
+        "description": "自动修复失败：\n\n```\n{error}\n```\n\n请检查路由器状态后重试。"
+      },
+      "repair_success": {
+        "title": "自动修复成功",
+        "description": "已通过 SSH 成功连接路由器，启动了所需服务并/或安装了缺失的软件包。"
+      },
+      "ubus_restricted": {
+        "title": "检测到受限的 Ubus",
+        "description": "通过 **ubus** 连接 **{host}**（{model}）成功，但路由器未返回完整的权限信息。部分功能可能受限。",
+        "data": {
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "selective_tracking": {
+        "title": "选择性设备跟踪",
+        "description": "为避免 Home Assistant 中出现过多设备跟踪实体，你可以选择只跟踪特定设备。",
+        "data": {
+          "tracked_devices": "检测到的设备",
+          "manual_tracked_devices": "手动 MAC 白名单（每行一个）"
+        }
+      },
+      "mqtt_presence": {
+        "title": "MQTT 在线检测（可选）",
+        "description": "启用基于 MQTT 的在线检测，可获得更高的可靠性与更低的延迟。",
+        "data": {
+          "mqtt_presence": "启用 MQTT 在线检测",
+          "mqtt_broker": "MQTT Broker（路由器可访问）",
+          "mqtt_port": "MQTT 端口",
+          "mqtt_username": "MQTT 用户名",
+          "mqtt_password": "MQTT 密码"
+        }
+      },
+      "mqtt_zone": {
+        "title": "MQTT 在线检测位置区域",
+        "description": "选择与路由器位置对应的 Home Assistant 区域实体。",
+        "data": {
+          "mqtt_zone": "目标区域实体（如 家、办公室）"
+        }
+      },
+      "deploy_mqtt_presence": {
+        "title": "正在部署脚本",
+        "description": "正在向路由器部署在线检测脚本，请稍候…"
+      },
+      "deploy_failed": {
+        "title": "部署失败",
+        "description": "MQTT 在线检测脚本部署失败。\n\n**错误：**\n```\n{error}\n```"
+      }
+    },
+    "error": {
+      "cannot_connect": "无法连接到路由器。请检查 IP/主机名，并确认所选服务（ubus/LuCI RPC）已启用。",
+      "invalid_auth": "身份验证失败（用户名、密码或 SSH 密钥错误）。请确认服务（ubus/LuCI RPC/SSH）已启用且凭据正确。",
+      "timeout": "连接超时。请检查路由器是否可达、端口是否正确。",
+      "ssl_error": "SSL 验证失败。若使用自签名证书，请关闭“验证 SSL 证书”。",
+      "package_missing": "缺少必需的路由器软件包。ubus 需要 'uhttpd-mod-ubus'，LuCI 需要 'luci-mod-rpc'。",
+      "permission_error": "RPC 权限不足。请检查 /etc/config/rpcd 中的用户 ACL。注意：'受限 Ubus' 仅允许基本访问。",
+      "provision_failed": "自动创建专用用户失败。请查看详细错误报告并手动配置。",
+      "no_devices_found": "未在网络中自动发现 FanchmWrt 路由器。你可以尝试手动输入信息。",
+      "unknown": "发生意外错误。",
+      "mqtt_permission_missing": "当前用户缺少部署 MQTT 在线检测脚本所需的权限。"
+    },
+    "abort": {
+      "already_configured": "该路由器已配置。",
+      "already_in_progress": "该路由器的配置流程已在进行中。",
+      "reauth_successful": "重新验证成功。",
+      "reconfigure_successful": "重新配置成功。",
+      "no_host": "发现的设备没有有效的主机地址。",
+      "not_openwrt": "发现的设备似乎不是 FanchmWrt 路由器。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "FanchmWrt 选项",
+        "description": "FanchmWrt 集成的主要设置。",
+        "data": {
+          "update_interval": "轮询间隔（秒）",
+          "dhcp_software": "DHCP 软件",
+          "enable_services": "服务开关",
+          "enable_firewall": "防火墙开关",
+          "enable_vpn": "VPN 传感器",
+          "enable_load": "负载传感器"
+        }
+      },
+      "options_permissions": {
+        "title": "权限摘要",
+        "description": "根据用户 **{username}** 的凭据，检测到以下权限：\n\n{permissions_table}",
+        "data": {
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "options_permissions_ubus": {
+        "title": "权限摘要",
+        "description": "根据用户 **{username}** 的凭据，检测到以下权限：\n\n{permissions_table}",
+        "data": {
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "options_ubus_restricted": {
+        "title": "检测到受限的 Ubus",
+        "description": "通过 **ubus** 连接 **{host}**（{model}）成功，但路由器未返回完整的权限信息。",
+        "data": {
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "options_packages": {
+        "title": "软件包摘要",
+        "description": "在路由器上检测到以下可选软件包。缺少的软件包可能导致部分功能不可用。",
+        "data": {
+          "track_devices": "启用设备跟踪",
+          "enable_load": "启用系统负载监控",
+          "enable_services": "启用服务监控与控制",
+          "enable_firewall": "启用防火墙实体（规则与重定向）",
+          "enable_led": "启用 LED 控制",
+          "enable_sqm": "启用 SQM QoS 控制",
+          "enable_vpn": "启用 VPN 监控与控制",
+          "enable_nlbwmon_sensors": "启用 NLBWMon 流量排行传感器",
+          "enable_snort_sensors": "启用 Snort IDS 传感器",
+          "acknowledge": "我已了解这些信息并继续"
+        }
+      },
+      "options_mqtt_presence": {
+        "title": "MQTT 在线检测（可选）",
+        "description": "启用基于 MQTT 的在线检测，可获得更高的可靠性与更低的延迟。",
+        "data": {
+          "mqtt_presence": "启用 MQTT 在线检测",
+          "mqtt_broker": "MQTT Broker（路由器可访问）",
+          "mqtt_port": "MQTT 端口",
+          "mqtt_username": "MQTT 用户名",
+          "mqtt_password": "MQTT 密码"
+        }
+      },
+      "options_mqtt_zone": {
+        "title": "MQTT 在线检测位置区域",
+        "description": "选择与路由器位置对应的 Home Assistant 区域实体。",
+        "data": {
+          "mqtt_zone": "目标区域实体（如 家、办公室）"
+        }
+      },
+      "options_deploy_failed": {
+        "title": "部署失败",
+        "description": "MQTT 在线检测脚本部署失败。\n\n**错误：**\n```\n{error}\n```"
+      },
+      "options_remove_failed": {
+        "title": "移除失败",
+        "description": "从路由器移除 MQTT 在线检测脚本失败。\n\n**错误：**\n```\n{error}\n```"
+      },
+      "options_redeploy_user": {
+        "title": "重新部署 Home Assistant 用户",
+        "description": "重新部署 Home Assistant 用户及其 ACL 规则，请提供 root 凭据。",
+        "data": {
+          "username": "Root 用户名",
+          "password": "Root 密码"
+        }
+      },
+      "options_redeploy_user_failed": {
+        "title": "重新部署失败",
+        "description": "重新部署 Home Assistant 用户失败。\n\n**错误：**\n```\n{error}\n```",
+        "data": {
+          "action": "下一步"
+        }
+      },
+      "options_select_devices": {
+        "title": "选择要跟踪的设备",
+        "description": "选择要在 Home Assistant 中跟踪的设备。若不选择，则跟踪所有检测到的设备。",
+        "data": {
+          "tracked_devices": "跟踪的设备",
+          "manual_tracked_devices": "手动 MAC 白名单（每行一个）",
+          "force_wireless_macs": "强制无线 MAC（每行一个）"
+        }
+      }
+    }
+  },
+  "selector": {
+    "dhcp_software": {
+      "options": {
+        "auto": "自动检测",
+        "dnsmasq": "dnsmasq（/tmp/dhcp.leases）",
+        "odhcpd": "odhcpd（ubus dhcp ipv4leases）",
+        "none": "无（禁用）"
+      }
+    },
+    "provision_mode": {
+      "options": {
+        "create": "创建新的 'homeassistant' 用户",
+        "reset": "重置现有用户（新密码与权限）",
+        "reuse": "使用现有 'homeassistant' 用户",
+        "skip": "继续使用 root（不推荐）"
+      }
+    },
+    "connection_type": {
+      "options": {
+        "ubus": "ubus（HTTP/HTTPS）",
+        "luci_rpc": "LuCI RPC",
+        "ssh": "SSH（不推荐）",
+        "manual": "手动配置…"
+      }
+    },
+    "flow_type": {
+      "options": {
+        "detect": "自动发现",
+        "manual": "手动配置"
+      }
+    }
+  },
   "entity": {
     "sensor": {
+      "config_flow_ui": {
+        "state": {
+          "permissions_header_subsystem": "子系统",
+          "permissions_header_read": "读",
+          "permissions_header_write": "写",
+          "permissions_header_missing": "缺失功能",
+          "permissions_sensors": "传感器",
+          "permissions_sub_system": "系统",
+          "permissions_sub_network": "网络",
+          "permissions_sub_interface": "接口",
+          "permissions_sub_wireless": "无线",
+          "permissions_sub_firewall": "防火墙",
+          "permissions_sub_devices": "设备",
+          "permissions_sub_device": "设备",
+          "permissions_sub_vpn": "VPN",
+          "permissions_sub_sqm": "SQM",
+          "permissions_sub_services": "服务",
+          "permissions_sub_service": "服务",
+          "permissions_sub_leds": "LED",
+          "permissions_sub_mwan3": "MWAN3",
+          "permissions_sub_batman": "Batman-adv",
+          "permissions_sub_mqtt": "MQTT 在线检测部署",
+          "permissions_feature_reboot": "重启",
+          "permissions_feature_upgrade": "升级",
+          "permissions_feature_backup": "备份",
+          "permissions_feature_up_down_reconnect": "启用/停用/重连",
+          "permissions_feature_toggle_wifi": "WiFi 开关",
+          "permissions_feature_wps_control": "WPS 控制",
+          "permissions_feature_deploy_scripts": "部署在线检测脚本",
+          "permissions_feature_toggling_rules_redirects": "切换规则/重定向",
+          "permissions_feature_access_control": "访问控制",
+          "permissions_feature_wake_on_lan": "网络唤醒",
+          "permissions_feature_kick_client": "踢出客户端",
+          "permissions_feature_toggle_sqm": "切换 SQM",
+          "permissions_feature_change_limits": "修改限速",
+          "permissions_feature_start_stop_restart": "启动/停止/重启",
+          "permissions_feature_control_leds": "控制 LED",
+          "diagnostics_header": "连接诊断报告",
+          "diagnostics_intro": "执行了以下检查以定位问题：",
+          "diagnostics_label_result": "结果",
+          "diagnostics_label_details": "详情",
+          "diagnostics_label_remedy": "对策",
+          "diagnostics_footer_title": "如何使用此报告",
+          "diagnostics_footer_intro": "如需帮助，请复制此报告并分享到",
+          "diagnostics_footer_link_text": "GitHub Issues 页面"
+        }
+      },
       "memory_usage": {
         "name": "内存使用率"
       },
@@ -11,16 +414,19 @@
         "name": "已用内存"
       },
       "swap_usage": {
-        "name": "交换空间使用率"
+        "name": "Swap 使用率"
       },
       "load_1min": {
-        "name": "负载 (1分钟)"
+        "name": "负载（1分钟）"
+      },
+      "conntrack_count": {
+        "name": "连接跟踪数"
       },
       "load_5min": {
-        "name": "负载 (5分钟)"
+        "name": "负载（5分钟）"
       },
       "load_15min": {
-        "name": "负载 (15分钟)"
+        "name": "负载（15分钟）"
       },
       "uptime": {
         "name": "运行时间"
@@ -41,10 +447,37 @@
         "name": "架构"
       },
       "filesystem_free": {
-        "name": "可用文件系统空间"
+        "name": "文件系统剩余空间"
+      },
+      "mount_storage_total": {
+        "name": "{mount} 总存储"
+      },
+      "mount_storage_used": {
+        "name": "{mount} 已用存储"
+      },
+      "mount_storage_free": {
+        "name": "{mount} 可用存储"
+      },
+      "mount_storage_usage": {
+        "name": "{mount} 存储使用率"
       },
       "system_logs": {
         "name": "系统日志"
+      },
+      "adblock_status": {
+        "name": "AdBlock 状态"
+      },
+      "adblock_blocked": {
+        "name": "AdBlock 拦截域名数"
+      },
+      "simple_adblock_blocked": {
+        "name": "Simple AdBlock 拦截域名数"
+      },
+      "banip_banned": {
+        "name": "Ban-IP 封禁 IP 数"
+      },
+      "banip_blocked": {
+        "name": "Ban-IP 拦截数据包数"
       },
       "connected_clients": {
         "name": "已连接客户端"
@@ -53,13 +486,38 @@
         "name": "无线客户端"
       },
       "wifi_clients": {
-        "name": "客户端数量"
+        "name": "客户端数"
       },
       "wifi_signal": {
         "name": "信号强度"
       },
       "wifi_channel": {
-        "name": "频道"
+        "name": "信道"
+      },
+      "net_rx": {
+        "name": "{interface} 接收"
+      },
+      "net_tx": {
+        "name": "{interface} 发送"
+      },
+      "net_ipv4": {
+        "name": "{interface} IPv4 地址"
+      },
+      "mwan_ratio": {
+        "name": "{interface} 在线率"
+      },
+      "mwan_policy_status": {
+        "name": "MWAN 策略 {family} {policy}"
+      },
+      "mwan_status": {
+        "name": "MWAN {interface} 状态",
+        "state": {
+          "online": "在线",
+          "offline": "离线",
+          "connecting": "连接中",
+          "disconnecting": "断开中",
+          "disabled": "已禁用"
+        }
       },
       "wifi_txpower": {
         "name": "发射功率"
@@ -74,34 +532,10 @@
         "name": "信号质量"
       },
       "wifi_bitrate": {
-        "name": "比特率"
+        "name": "速率"
       },
       "wifi_noise": {
-        "name": "噪声水平"
-      },
-      "net_rx": {
-        "name": "{interface} 接收"
-      },
-      "net_tx": {
-        "name": "{interface} 发送"
-      },
-      "net_ipv4": {
-        "name": "{interface} IPv4 地址"
-      },
-      "net_ipv6": {
-        "name": "{interface} IPv6 地址"
-      },
-      "net_rx_rate": {
-        "name": "{interface} 接收速率"
-      },
-      "net_tx_rate": {
-        "name": "{interface} 发送速率"
-      },
-      "net_speed": {
-        "name": "{interface} 链路速度"
-      },
-      "net_uptime": {
-        "name": "{interface} 运行时间"
+        "name": "噪声电平"
       },
       "net_rx_errors": {
         "name": "接收错误"
@@ -110,10 +544,10 @@
         "name": "发送错误"
       },
       "net_rx_dropped": {
-        "name": "接收丢弃"
+        "name": "接收丢包"
       },
       "net_tx_dropped": {
-        "name": "发送丢弃"
+        "name": "发送丢包"
       },
       "net_collisions": {
         "name": "冲突"
@@ -131,85 +565,16 @@
         "name": "发送速率"
       },
       "device_noise": {
-        "name": "噪声水平"
+        "name": "噪声电平"
+      },
+      "net_rx_rate": {
+        "name": "{interface} 接收速率"
+      },
+      "net_tx_rate": {
+        "name": "{interface} 发送速率"
       },
       "device_connection_type": {
         "name": "连接类型"
-      },
-      "vpn_rx": {
-        "name": "{interface} 接收"
-      },
-      "vpn_tx": {
-        "name": "{interface} 发送"
-      },
-      "vpn_peers": {
-        "name": "VPN 对等节点"
-      },
-      "dhcp_lease_count": {
-        "name": "DHCP 租约"
-      },
-      "wan_latency": {
-        "name": "WAN 延迟"
-      },
-      "conntrack_count": {
-        "name": "连接跟踪"
-      },
-      "adblock_status": {
-        "name": "AdBlock 状态"
-      },
-      "adblock_blocked": {
-        "name": "AdBlock 已拦截域名"
-      },
-      "simple_adblock_blocked": {
-        "name": "Simple AdBlock 已拦截域名"
-      },
-      "banip_banned": {
-        "name": "Ban-IP 已封禁 IP"
-      },
-      "banip_blocked": {
-        "name": "Ban-IP 已拦截数据包"
-      },
-      "sqm_interface": {
-        "name": "SQM 接口"
-      },
-      "sqm_qdisc": {
-        "name": "SQM Qdisc"
-      },
-      "sqm_script": {
-        "name": "SQM 脚本"
-      },
-      "mwan_ratio": {
-        "name": "{interface} 在线率"
-      },
-      "batman_originators_count": {
-        "name": "Batman Mesh 源节点"
-      },
-      "batman_neighbors_count": {
-        "name": "Batman Mesh 邻居节点"
-      },
-      "batman_gateways_count": {
-        "name": "Batman Mesh 网关"
-      },
-      "batman_tq": {
-        "name": "Mesh 链路质量 (TQ)"
-      },
-      "lldp_neighbor": {
-        "name": "LLDP 邻居"
-      },
-      "neighbor_devices": {
-        "name": "邻居设备"
-      },
-      "mount_storage_total": {
-        "name": "{mount} 总存储空间"
-      },
-      "mount_storage_used": {
-        "name": "{mount} 已用存储空间"
-      },
-      "mount_storage_free": {
-        "name": "{mount} 可用存储空间"
-      },
-      "mount_storage_usage": {
-        "name": "{mount} 存储使用率"
       },
       "qmodem_manufacturer": {
         "name": "调制解调器制造商"
@@ -230,10 +595,10 @@
         "name": "SIM 卡状态"
       },
       "qmodem_isp": {
-        "name": "互联网服务提供商"
+        "name": "运营商"
       },
       "qmodem_sim_slot": {
-        "name": "SIM 卡插槽"
+        "name": "SIM 卡槽"
       },
       "qmodem_lte_rsrp": {
         "name": "LTE RSRP"
@@ -257,38 +622,463 @@
         "name": "5G NR SINR"
       },
       "qmodem_gps_latitude": {
-        "name": "调制解调器 GPS 纬度"
+        "name": "GPS 纬度"
       },
       "qmodem_gps_longitude": {
-        "name": "调制解调器 GPS 经度"
+        "name": "GPS 经度"
       },
       "qmodem_gps_last_update": {
-        "name": "调制解调器 GPS 最后更新"
+        "name": "GPS 最后更新"
       },
       "qmodem_gps_last_update_attempted": {
-        "name": "调制解调器 GPS 最后尝试更新"
+        "name": "GPS 最后尝试更新"
       },
       "qmodem_gps_last_update_successful": {
-        "name": "调制解调器 GPS 最后成功更新"
+        "name": "GPS 最后成功更新"
       },
       "qmodem_gps_last_update_ok": {
-        "name": "调制解调器 GPS 最后更新状态"
+        "name": "GPS 更新状态"
+      },
+      "dhcp_lease_count": {
+        "name": "DHCP 租约"
       },
       "mqtt_presence_status": {
-        "name": "MQTT 在线状态"
+        "name": "MQTT 在线检测状态"
+      },
+      "wan_latency": {
+        "name": "WAN 延迟"
+      },
+      "batman_originators_count": {
+        "name": "Batman Mesh 源节点数"
+      },
+      "batman_neighbors_count": {
+        "name": "Batman Mesh 邻居数"
+      },
+      "batman_gateways_count": {
+        "name": "Batman Mesh 网关数"
+      },
+      "batman_tq": {
+        "name": "Mesh 链路质量 (TQ)"
+      },
+      "vpn_rx": {
+        "name": "{interface} 接收"
+      },
+      "vpn_tx": {
+        "name": "{interface} 发送"
+      },
+      "vpn_peers": {
+        "name": "VPN 对端数"
+      },
+      "net_ipv6": {
+        "name": "{interface} IPv6 地址"
+      },
+      "net_speed": {
+        "name": "{interface} 链路速率"
+      },
+      "net_uptime": {
+        "name": "{interface} 运行时间"
+      },
+      "sqm_interface": {
+        "name": "SQM 接口"
+      },
+      "sqm_qdisc": {
+        "name": "SQM 队列规则"
+      },
+      "sqm_script": {
+        "name": "SQM 脚本"
+      },
+      "lldp_neighbor": {
+        "name": "LLDP 邻居"
+      },
+      "neighbor_devices": {
+        "name": "邻居设备"
+      },
+      "package_feature": {
+        "state": {
+          "sqm_scripts": "SQM QoS 设置",
+          "mwan3": "MWAN3 传感器",
+          "iwinfo": "无线客户端详情",
+          "etherwake": "网络唤醒",
+          "wireguard": "WireGuard 支持",
+          "openvpn": "OpenVPN 传感器",
+          "luci_mod_rpc": "LuCI RPC 支持",
+          "asu": "固件升级 (ASU)",
+          "adblock": "AdBlock",
+          "simple_adblock": "Simple AdBlock",
+          "ban_ip": "Ban-IP",
+          "batman_adv": "Batman-adv Mesh",
+          "batctl": "Batman-adv 控制 (batctl)",
+          "nlbwmon": "流量排行传感器",
+          "snort": "Snort IDS 传感器",
+          "tailscale": "Tailscale 传感器",
+          "openssl_util": "备份生成 (OpenSSL)",
+          "coreutils_base64": "备份解压 (Base64)"
+        }
+      },
+      "tsvpn_backend_state": {
+        "name": "Tailscale 状态",
+        "state": {
+          "no_state": "无状态",
+          "needs_login": "需要登录",
+          "needs_machine_auth": "需要设备授权",
+          "stopped": "已停止",
+          "starting": "启动中",
+          "running": "运行中",
+          "daemon_unavailable": "守护进程不可用",
+          "unknown": "未知"
+        }
+      },
+      "tsvpn_ip": {
+        "name": "Tailscale IP"
+      },
+      "tsvpn_home_derp": {
+        "name": "Tailscale 主 DERP"
+      },
+      "tsvpn_peers_online": {
+        "name": "Tailscale 在线对端数"
+      },
+      "tsvpn_key_expiry": {
+        "name": "Tailscale 密钥过期"
+      },
+      "tsvpn_rx": {
+        "name": "Tailscale 隧道接收"
+      },
+      "tsvpn_tx": {
+        "name": "Tailscale 隧道发送"
       }
     },
     "binary_sensor": {
       "reboot_required": {
         "name": "需要重启"
+      },
+      "device_connected": {
+        "name": "已连接"
+      },
+      "mwan_online": {
+        "name": "MWAN {interface} 在线"
+      },
+      "interface_up": {
+        "name": "{interface} 已连接"
+      },
+      "vpn_up": {
+        "name": "VPN {interface} 已连接"
+      },
+      "batman_mesh_active": {
+        "name": "Batman Mesh 活跃"
+      },
+      "tsvpn_connected": {
+        "name": "Tailscale 已连接"
+      },
+      "tsvpn_health": {
+        "name": "Tailscale 异常"
+      },
+      "tsvpn_peer_online": {
+        "name": "Tailscale 对端 {peer}"
       }
     },
     "button": {
       "reboot": {
-        "name": "重启"
+        "name": "重启路由器"
+      },
+      "interface_reconnect": {
+        "name": "重连 {interface}"
+      },
+      "firewall_port_forward": {
+        "name": "端口转发"
+      },
+      "device_access": {
+        "name": "互联网访问"
+      },
+      "wps_start": {
+        "name": "启动 WPS"
+      },
+      "wps_cancel": {
+        "name": "取消 WPS"
+      },
+      "service_restart": {
+        "name": "重启 {service}"
+      },
+      "service_stop": {
+        "name": "停止 {service}"
+      },
+      "kick_device": {
+        "name": "踢出设备"
       },
       "wake_on_lan": {
         "name": "网络唤醒"
+      },
+      "create_backup": {
+        "name": "创建备份"
+      }
+    },
+    "switch": {
+      "device_access": {
+        "name": "互联网访问"
+      },
+      "wps": {
+        "name": "WPS"
+      },
+      "wireless_radio": {
+        "name": "无线"
+      },
+      "service_toggle": {
+        "name": "服务"
+      },
+      "firewall_port_forward": {
+        "name": "端口转发：{name}"
+      },
+      "firewall_rule": {
+        "name": "防火墙规则：{name}"
+      },
+      "sqm_enabled": {
+        "name": "SQM 已启用"
+      },
+      "adblock": {
+        "name": "AdBlock"
+      },
+      "simple_adblock": {
+        "name": "Simple AdBlock"
+      },
+      "banip": {
+        "name": "Ban-IP"
+      }
+    },
+    "update": {
+      "firmware_update": {
+        "name": "固件"
+      },
+      "custom_firmware_update": {
+        "name": "自定义固件"
+      }
+    },
+    "light": {
+      "led": {
+        "name": "LED"
+      }
+    },
+    "event": {
+      "new_device": {
+        "name": "新设备",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "new_device_connected": "新设备已连接",
+              "device_connected": "设备已连接",
+              "device_disconnected": "设备已断开"
+            }
+          }
+        }
+      }
+    },
+    "number": {
+      "wifi_txpower_control": {
+        "name": "发射功率"
+      },
+      "sqm_download": {
+        "name": "SQM 下载限速"
+      },
+      "sqm_upload": {
+        "name": "SQM 上传限速"
+      }
+    }
+  },
+  "issues": {
+    "auth_failed": {
+      "title": "{host} 身份验证失败",
+      "description": "FanchmWrt 集成无法通过 {host} 的身份验证。凭据可能已更改，请重新配置。"
+    },
+    "wan_down": {
+      "title": "{host} 的 WAN 连接已断开",
+      "description": "FanchmWrt 路由器 {host} 报告主 WAN 接口当前离线。"
+    },
+    "connection_lost": {
+      "title": "与 {host} 的连接已丢失",
+      "description": "Home Assistant 无法访问 {host} 上的 FanchmWrt 路由器。请检查设备是否在线。"
+    },
+    "missing_packages": {
+      "title": "{host} 缺少推荐软件包",
+      "description": "要使用 FanchmWrt 集成的全部功能，{host} 上还缺少一些软件包。"
+    },
+    "firmware_outdated": {
+      "title": "{host} 的路由器固件已过时",
+      "description": "FanchmWrt 路由器 {host} 当前运行 {current_version} 版本，最新版本为 {latest_version}。"
+    },
+    "stale_permissions": {
+      "title": "{username} 在 {host} 上的权限已失效",
+      "fix_flow": {
+        "step": {
+          "init": {
+            "title": "刷新权限",
+            "description": "用户 **{username}** 在 **{host}** 上的权限需要更新。请提供 root 凭据以继续。"
+          },
+          "root_login": {
+            "title": "以 Root 登录",
+            "description": "请输入 **{host}** 上具有 **root** 权限的用户凭据。",
+            "data": {
+              "username": "Root 用户名",
+              "password": "Root 密码"
+            }
+          }
+        },
+        "abort": {
+          "unknown_error": "发生未知错误。",
+          "cannot_connect": "无法以 root 身份连接到路由器。",
+          "provision_failed": "更新专用用户权限失败。"
+        }
+      }
+    },
+    "stale_permissions_upgrade": {
+      "title": "路由器升级后 {host} 的权限丢失",
+      "fix_flow": {
+        "step": {
+          "init": {
+            "title": "恢复权限",
+            "description": "检测到 **{host}** 上发生了固件升级。这类升级通常会重置自定义 RPC ACL 规则。"
+          },
+          "root_login": {
+            "title": "以 Root 登录",
+            "description": "请输入 **{host}** 上具有 **root** 权限的用户凭据。",
+            "data": {
+              "username": "Root 用户名",
+              "password": "Root 密码"
+            }
+          }
+        },
+        "abort": {
+          "unknown_error": "发生未知错误。",
+          "cannot_connect": "无法以 root 身份连接到路由器。",
+          "provision_failed": "更新专用用户权限失败。"
+        }
+      }
+    }
+  },
+  "services": {
+    "reboot": {
+      "name": "重启路由器",
+      "description": "重启 FanchmWrt 路由器。",
+      "fields": {
+        "entry_id": {
+          "name": "设备",
+          "description": "要重启的 FanchmWrt 路由器。"
+        }
+      }
+    },
+    "execute_command": {
+      "name": "执行命令",
+      "description": "在 FanchmWrt 路由器上执行 Shell 命令。",
+      "fields": {
+        "entry_id": {
+          "name": "设备",
+          "description": "FanchmWrt 路由器。"
+        },
+        "command": {
+          "name": "命令",
+          "description": "要执行的命令（如 cat /proc/cpuinfo）。"
+        }
+      }
+    },
+    "manage_service": {
+      "name": "管理服务",
+      "description": "管理 FanchmWrt 路由器上的 init.d 服务。",
+      "fields": {
+        "entry_id": {
+          "name": "设备",
+          "description": "FanchmWrt 路由器。"
+        },
+        "service_name": {
+          "name": "服务名称",
+          "description": "服务名（如 dnsmasq）。"
+        },
+        "action": {
+          "name": "操作",
+          "description": "要执行的操作（start、stop、restart、enable、disable）。"
+        }
+      }
+    },
+    "wake_on_lan": {
+      "name": "网络唤醒",
+      "description": "通过 FanchmWrt 路由器向设备发送网络唤醒魔术包。",
+      "fields": {
+        "target": {
+          "name": "目标路由器",
+          "description": "发送唤醒包的 FanchmWrt 路由器。"
+        },
+        "mac": {
+          "name": "MAC 地址",
+          "description": "要唤醒设备的 MAC 地址。"
+        },
+        "interface": {
+          "name": "接口",
+          "description": "发送数据包的接口（可选，如 br-lan）。"
+        }
+      }
+    },
+    "uci_get": {
+      "name": "UCI 读取",
+      "description": "从 FanchmWrt 路由器读取 UCI 配置值。",
+      "fields": {
+        "entry_id": {
+          "name": "设备",
+          "description": "FanchmWrt 路由器。"
+        },
+        "config": {
+          "name": "配置",
+          "description": "UCI 配置文件（如 network）。"
+        },
+        "section": {
+          "name": "节",
+          "description": "UCI 节（如 lan）。"
+        },
+        "option": {
+          "name": "选项",
+          "description": "UCI 选项（如 ipaddr）。"
+        }
+      }
+    },
+    "uci_set": {
+      "name": "UCI 写入",
+      "description": "设置 FanchmWrt 路由器上的 UCI 配置值并提交更改。",
+      "fields": {
+        "entry_id": {
+          "name": "设备",
+          "description": "FanchmWrt 路由器。"
+        },
+        "config": {
+          "name": "配置",
+          "description": "UCI 配置文件（如 network）。"
+        },
+        "section": {
+          "name": "节",
+          "description": "UCI 节（如 lan）。"
+        },
+        "option": {
+          "name": "选项",
+          "description": "UCI 选项（如 ipaddr）。"
+        },
+        "value": {
+          "name": "值",
+          "description": "要设置的值。"
+        }
+      }
+    },
+    "create_backup": {
+      "name": "创建备份",
+      "description": "生成路由器配置的备份归档。",
+      "fields": {
+        "entry_id": {
+          "name": "设备",
+          "description": "FanchmWrt 路由器。"
+        }
+      }
+    },
+    "generate_report": {
+      "name": "生成报告",
+      "description": "生成 Markdown 格式的详细系统报告。",
+      "fields": {
+        "entry_id": {
+          "name": "设备",
+          "description": "FanchmWrt 路由器。"
+        }
       }
     }
   }

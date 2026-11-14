@@ -96,34 +96,10 @@ async def async_setup_entry(
         pkgs = coordinator.data.packages
         entities: list[SwitchEntity] = []
 
-        if perms.write_wireless:
-            _add_wireless_switches(coordinator, entry, client, entities, tracked_keys)
-
+        # 旁路由精简：仅保留服务开关
+        # （无线 / 防火墙 / 访问控制 / SQM / VPN / LED / AdBlock 类开关已移除）
         if perms.write_services and entry.options.get(CONF_ENABLE_SERVICES, True):
             _add_service_switches(coordinator, entry, client, entities, tracked_keys)
-
-        if perms.write_firewall and entry.options.get(CONF_ENABLE_FIREWALL, True):
-            _add_firewall_switches(coordinator, entry, client, entities, tracked_keys)
-
-        if perms.write_access_control:
-            _add_access_control_switches(
-                coordinator, entry, client, entities, tracked_keys
-            )
-
-        if (
-            perms.write_sqm
-            and pkgs.sqm_scripts is not False
-            and entry.options.get(CONF_ENABLE_SQM, True)
-        ):
-            _add_sqm_switches(coordinator, entry, client, entities, tracked_keys)
-
-        if perms.write_vpn and entry.options.get(CONF_ENABLE_VPN, True):
-            _add_vpn_switches(coordinator, entry, client, entities, tracked_keys)
-
-        if perms.write_led and entry.options.get(CONF_ENABLE_LED, True):
-            _add_led_switches(coordinator, entry, client, entities, tracked_keys)
-
-        _add_package_switches(coordinator, entry, client, entities, tracked_keys, pkgs)
 
         if entities:
             async_add_entities(

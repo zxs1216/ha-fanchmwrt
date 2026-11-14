@@ -13,6 +13,10 @@ from homeassistant.config_entries import (
 
 from ..const import (
     CONF_ASU_URL,
+    CONF_ENABLE_FIREWALL,
+    CONF_ENABLE_LOAD,
+    CONF_ENABLE_SERVICES,
+    CONF_ENABLE_VPN,
     CONF_AUTO_BACKUP,
     CONF_BACKUP_RETENTION_DAYS,
     CONF_CHECK_FIRMWARE_UPDATES,
@@ -89,60 +93,20 @@ class OpenWrtOptionsFlow(OptionsPackagesFlowMixin, OptionsMqttFlowMixin, Options
         self,
         user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
-        """Manage the options."""
+        """Manage the options: main settings only (旁路由精简)."""
         if user_input is not None:
             _LOGGER.debug("Options init submitted: %s", user_input)
             self._options = {**self._config_entry.options, **user_input}
-            if user_input.get(CONF_REDEPLOY_USER):
-                return await self.async_step_options_redeploy_user()
-
-            if should_redeploy_mqtt_presence(self._config_entry.options, self._options):
-                return await self.async_step_options_mqtt_presence()
-
-            return await self.async_step_options_permissions()
+            return self.async_create_entry(title="", data=self._options)
 
         current = self._config_entry.options
+        # 旁路由精简：仅保留主要设置
+        # （轮询间隔 / DHCP 来源 / 服务·防火墙·VPN·负载开关）
         schema_dict: dict[Any, Any] = {
             vol.Optional(
                 CONF_UPDATE_INTERVAL,
                 default=current.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
             ): vol.All(vol.Coerce(int), vol.Range(min=10, max=3600)),
-            vol.Optional(
-                CONF_TRACK_WIRED,
-                default=current.get(CONF_TRACK_WIRED, DEFAULT_TRACK_WIRED),
-            ): bool,
-            vol.Optional(
-                CONF_CONSIDER_HOME,
-                default=current.get(CONF_CONSIDER_HOME, DEFAULT_CONSIDER_HOME),
-            ): vol.All(vol.Coerce(int), vol.Range(min=0, max=3600)),
-            vol.Optional(
-                CONF_CHECK_FIRMWARE_UPDATES,
-                default=current.get(
-                    CONF_CHECK_FIRMWARE_UPDATES, DEFAULT_CHECK_FIRMWARE_UPDATES
-                ),
-            ): bool,
-            vol.Optional(
-                CONF_AUTO_BACKUP,
-                default=current.get(CONF_AUTO_BACKUP, True),
-            ): bool,
-            vol.Optional(
-                CONF_BACKUP_RETENTION_DAYS,
-                default=current.get(
-                    CONF_BACKUP_RETENTION_DAYS, DEFAULT_BACKUP_RETENTION_DAYS
-                ),
-            ): vol.All(vol.Coerce(int), vol.Range(min=1, max=365)),
-            vol.Optional(
-                CONF_CUSTOM_FIRMWARE_REPO,
-                default=current.get(CONF_CUSTOM_FIRMWARE_REPO, ""),
-            ): str,
-            vol.Optional(
-                CONF_ASU_URL,
-                default=current.get(CONF_ASU_URL, "https://sysupgrade.openwrt.org"),
-            ): str,
-            vol.Optional(
-                CONF_TARGET_OVERRIDE,
-                default=current.get(CONF_TARGET_OVERRIDE, ""),
-            ): str,
             vol.Optional(
                 CONF_DHCP_SOFTWARE,
                 default=current.get(CONF_DHCP_SOFTWARE, "auto"),
@@ -154,70 +118,23 @@ class OpenWrtOptionsFlow(OptionsPackagesFlowMixin, OptionsMqttFlowMixin, Options
                 ),
             ),
             vol.Optional(
-                CONF_SKIP_RANDOM_MAC,
-                default=current.get(CONF_SKIP_RANDOM_MAC, DEFAULT_SKIP_RANDOM_MAC),
+                CONF_ENABLE_SERVICES,
+                default=current.get(CONF_ENABLE_SERVICES, True),
             ): bool,
             vol.Optional(
-                CONF_MQTT_PRESENCE,
-                default=current.get(CONF_MQTT_PRESENCE, False),
+                CONF_ENABLE_FIREWALL,
+                default=current.get(CONF_ENABLE_FIREWALL, False),
+            ): bool,
+            vol.Optional(
+                CONF_ENABLE_VPN,
+                default=current.get(CONF_ENABLE_VPN, False),
+            ): bool,
+            vol.Optional(
+                CONF_ENABLE_LOAD,
+                default=current.get(CONF_ENABLE_LOAD, True),
             ): bool,
         }
 
-        if current.get(CONF_MQTT_PRESENCE, False):
-            schema_dict[
-                vol.Optional(
-                    CONF_REDEPLOY_MQTT,
-                    default=False,
-                )
-            ] = bool
-
-        schema_dict.update(
-            {
-                vol.Optional(
-                    CONF_TRUST_STALE_ARP,
-                    default=current.get(CONF_TRUST_STALE_ARP, DEFAULT_TRUST_STALE_ARP),
-                ): bool,
-                vol.Optional(
-                    CONF_TRUST_BRIDGE_FDB,
-                    default=current.get(
-                        CONF_TRUST_BRIDGE_FDB, DEFAULT_TRUST_BRIDGE_FDB
-                    ),
-                ): bool,
-                vol.Optional(
-                    CONF_FORCE_WIRELESS_MACS,
-                    default=current.get(CONF_FORCE_WIRELESS_MACS, ""),
-                ): selector.TextSelector(
-                    selector.TextSelectorConfig(
-                        multiline=True,
-                        type=selector.TextSelectorType.TEXT,
-                    )
-                ),
-                vol.Optional(
-                    CONF_GPS_MODEM_ENABLED,
-                    default=current.get(
-                        CONF_GPS_MODEM_ENABLED, DEFAULT_GPS_MODEM_ENABLED
-                    ),
-                ): bool,
-                vol.Optional(
-                    CONF_GPS_MODEM_PORT,
-                    default=current.get(CONF_GPS_MODEM_PORT, DEFAULT_GPS_MODEM_PORT),
-                ): str,
-                vol.Optional(
-                    CONF_GPS_POLL_INTERVAL,
-                    default=current.get(
-                        CONF_GPS_POLL_INTERVAL, DEFAULT_GPS_POLL_INTERVAL
-                    ),
-                ): vol.All(vol.Coerce(int), vol.Range(min=10, max=86400)),
-                vol.Optional(
-                    CONF_REVERSE_DNS,
-                    default=current.get(CONF_REVERSE_DNS, DEFAULT_REVERSE_DNS),
-                ): bool,
-                vol.Optional(
-                    CONF_REDEPLOY_USER,
-                    default=False,
-                ): bool,
-            }
-        )
         schema = vol.Schema(schema_dict)
         return self.async_show_form(step_id="init", data_schema=schema)
 

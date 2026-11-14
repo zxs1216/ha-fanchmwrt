@@ -2,23 +2,24 @@
   "config": {
     "step": {
       "user": {
-        "title": "OpenWrt Setup Wizard",
-        "description": "Select the connection method for your OpenWrt router. [Learn more]({docs_url}).",
+        "title": "FanchmWrt Setup",
+        "description": "Connect to your FanchmWrt router (ubus). [Learn more]({docs_url}).",
         "data": {
-          "connection_type": "Connection Type",
-          "flow_type": "Setup Mode"
+          "host": "Host",
+          "username": "Username",
+          "password": "Password"
         }
       },
       "discovery": {
-        "title": "Searching for OpenWrt",
-        "description": "Scanning your network for OpenWrt routers... {discovery_info}",
+        "title": "Searching for FanchmWrt",
+        "description": "Scanning your network for FanchmWrt routers... {discovery_info}",
         "data": {
           "next": "Continue with discovery"
         }
       },
       "select_device": {
         "title": "Select Your Router",
-        "description": "Multiple OpenWrt devices were found. Please select the one you want to configure:\n\n{public_info}",
+        "description": "Multiple FanchmWrt devices were found. Please select the one you want to configure:\n\n{public_info}",
         "data": {
           "device": "Select Device (or enter details manually)"
         }
@@ -59,14 +60,14 @@
       },
       "reauth_confirm": {
         "title": "Re-authenticate",
-        "description": "The credentials for the OpenWrt router are no longer valid. Please enter the new password.",
+        "description": "The credentials for the FanchmWrt router are no longer valid. Please enter the new password.",
         "data": {
           "username": "Username",
           "password": "Password"
         }
       },
       "confirm_discovery": {
-        "title": "Discovered OpenWrt Router",
+        "title": "Discovered Router",
         "description": "Do you want to set up {name} ({host})? Connection will be established via **{method}**.\n\nAvailable capabilities: {capabilities}",
         "data": {
           "username": "Username",
@@ -123,7 +124,7 @@
       },
       "display_new_user": {
         "title": "User Created Successfully",
-        "description": "A new user has been created on your OpenWrt router:\n\n**Username:** {username}\n**Password:** {password}\n\n**IMPORTANT:** Please document/write down this password, as you will need it again if you set up the integration from scratch. If you choose to use this user, Home Assistant will switch to these credentials now.",
+        "description": "A new user has been created on your FanchmWrt router:\n\n**Username:** {username}\n**Password:** {password}\n\n**IMPORTANT:** Please document/write down this password, as you will need it again if you set up the integration from scratch. If you choose to use this user, Home Assistant will switch to these credentials now.",
         "data": {
           "use_new_user": "Switch to new user now"
         }
@@ -203,12 +204,12 @@
       "invalid_auth": "Invalid authentication credentials (Username, Password or SSH Key). Ensure the service (ubus/LuCI) is enabled and your user has sufficient ACL permissions.",
       "timeout": "Connection timed out. Check if the router is reachable and the port is correct.",
       "ssl_error": "SSL verification failed. If using self-signed certs, disable 'Verify SSL Certificate'.",
-      "package_missing": "Required OpenWrt package is missing. For ubus: 'uhttpd-mod-ubus'. For LuCI: 'luci-mod-rpc'. Install via SSH: 'opkg update && opkg install PACKAGE' (or 'apk add PACKAGE' on newer versions).",
+      "package_missing": "Required router package is missing. For ubus: 'uhttpd-mod-ubus'. For LuCI: 'luci-mod-rpc'. Install via SSH: 'opkg update && opkg install PACKAGE' (or 'apk add PACKAGE' on newer versions).",
       "permission_error": "Insufficient RPC permissions. Check your user ACLs in /etc/config/rpcd. Note: 'Restricted users' in LuCI often only have access to web-interface RPCs, but not the raw ubus objects required for this connection method.",
       "provision_failed": "Failed to automatically create the dedicated user. Please review the detailed error report below for troubleshooting steps.",
-      "no_devices_found": "No OpenWrt routers were automatically discovered on your network. You can try to enter the details manually.",
+      "no_devices_found": "No FanchmWrt routers were automatically discovered on your network. You can try to enter the details manually.",
       "unknown": "An unexpected error occurred.",
-      "mqtt_permission_missing": "The configured OpenWrt user lacks the necessary permissions to deploy the MQTT presence detection scripts (requires file.exec/sys.exec rights)."
+      "mqtt_permission_missing": "The configured user lacks the necessary permissions to deploy the MQTT presence detection scripts (requires file.exec/sys.exec rights)."
     },
     "abort": {
       "already_configured": "This router is already configured.",
@@ -216,37 +217,22 @@
       "reauth_successful": "Re-authentication was successful.",
       "reconfigure_successful": "Reconfiguration was successful.",
       "no_host": "Discovered device has no valid host address.",
-      "not_openwrt": "Discovered device does not appear to be an OpenWrt router."
+      "not_openwrt": "Discovered device does not appear to be an FanchmWrt router."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "OpenWrt Options",
+        "title": "FanchmWrt Options",
+        "description": "Main settings for the FanchmWrt integration.",
         "data": {
           "update_interval": "Update Interval (seconds)",
-          "track_wired": "Include Wired Devices in Tracking",
-          "consider_home": "Device 'Consider Home' Delay (seconds)",
           "dhcp_software": "DHCP Software",
-          "check_firmware_updates": "Check for firmware updates",
-          "auto_backup": "Automatic Backup before Firmware Update",
-          "backup_retention_days": "Backup retention period (days)",
-          "custom_firmware_repo": "Custom Firmware GitHub Repo (owner/repo)",
-          "asu_url": "Attended Sysupgrade Server URL",
-          "target_override": "Target Override (e.g. arch/subtarget)",
-          "skip_random_mac": "Ignore devices with randomized MAC addresses",
-          "mqtt_presence": "Enable MQTT Presence Detection",
-          "redeploy_mqtt": "Re-deploy MQTT Presence Scripts",
-          "redeploy_user": "Re-deploy Home Assistant User & ACLs",
-          "trust_stale_arp": "Trust ARP 'STALE' state for presence",
-          "trust_bridge_fdb": "Trust Bridge FDB for presence (Wired)",
-          "force_wireless_macs": "Force Wireless MACs (One per line)",
-          "gps_modem_enabled": "Enable GPS Modem tracking",
-          "gps_modem_port": "GPS Modem Serial Port",
-          "gps_poll_interval": "GPS Modem Poll Interval (seconds)",
-          "reverse_dns": "Resolve hostnames via reverse DNS"
-        },
-        "description": "Configure OpenWrt integration options."
+          "enable_services": "Service switches",
+          "enable_firewall": "Firewall switches",
+          "enable_vpn": "VPN sensors",
+          "enable_load": "Load sensors"
+        }
       },
       "options_permissions": {
         "title": "Permissions Summary",
@@ -899,23 +885,23 @@
   "issues": {
     "auth_failed": {
       "title": "Authentication failed for {host}",
-      "description": "The OpenWrt integration could not authenticate with {host}. The credentials might have been changed.\n\nPlease update the credentials to restore the connection."
+      "description": "The FanchmWrt integration could not authenticate with {host}. The credentials might have been changed.\n\nPlease update the credentials to restore the connection."
     },
     "wan_down": {
       "title": "WAN connection is down on {host}",
-      "description": "The OpenWrt router {host} reports that the main WAN interface is currently down. Internet connectivity might be affected."
+      "description": "The FanchmWrt router {host} reports that the main WAN interface is currently down. Internet connectivity might be affected."
     },
     "connection_lost": {
       "title": "Connection lost to {host}",
-      "description": "Home Assistant cannot reach the OpenWrt router at {host}. Please check if the device is powered on and reachable over the network."
+      "description": "Home Assistant cannot reach the FanchmWrt router at {host}. Please check if the device is powered on and reachable over the network."
     },
     "missing_packages": {
       "title": "Missing recommended packages on {host}",
-      "description": "To use all features of the OpenWrt integration, some packages are missing on {host}.\n\nPlease install the following packages via LuCI or SSH: `{packages}`."
+      "description": "To use all features of the FanchmWrt integration, some packages are missing on {host}.\n\nPlease install the following packages via LuCI or SSH: `{packages}`."
     },
     "firmware_outdated": {
-      "title": "OpenWrt firmware is outdated on {host}",
-      "description": "The OpenWrt router {host} is running version {current_version}, but version {latest_version} is available.\n\nIt is highly recommended to keep your router's firmware up to date for security reasons. You can download the latest release [here]({release_url})."
+      "title": "Router firmware is outdated on {host}",
+      "description": "The FanchmWrt router {host} is running version {current_version}, but version {latest_version} is available.\n\nIt is highly recommended to keep your router's firmware up to date for security reasons. You can download the latest release [here]({release_url})."
     },
     "stale_permissions": {
       "title": "Stale permissions for {username} on {host}",
@@ -942,12 +928,12 @@
       }
     },
     "stale_permissions_upgrade": {
-      "title": "Permissions lost after OpenWrt upgrade on {host}",
+      "title": "Permissions lost after router upgrade on {host}",
       "fix_flow": {
         "step": {
           "init": {
             "title": "Restore Permissions",
-            "description": "An OpenWrt firmware upgrade was detected on **{host}**. These upgrades often reset custom RPC ACL rules, which prevents the dedicated user **{username}** from accessing system sensors like CPU, RAM, or Temperature.\n\nYou need to redeploy the ACLs to restore full monitoring. You will be asked to provide the **root** password for this one-time fix.\n\nNote: The root password is only used for this session and is not stored."
+            "description": "A router firmware upgrade was detected on **{host}**. These upgrades often reset custom RPC ACL rules, which prevents the dedicated user **{username}** from accessing system sensors like CPU, RAM, or Temperature.\n\nYou need to redeploy the ACLs to restore full monitoring. You will be asked to provide the **root** password for this one-time fix.\n\nNote: The root password is only used for this session and is not stored."
           },
           "root_login": {
             "title": "Login as Root",
@@ -969,21 +955,21 @@
   "services": {
     "reboot": {
       "name": "Reboot Router",
-      "description": "Reboots the OpenWrt router.",
+      "description": "Reboots the FanchmWrt router.",
       "fields": {
         "entry_id": {
           "name": "Device",
-          "description": "The OpenWrt router to reboot."
+          "description": "The FanchmWrt router to reboot."
         }
       }
     },
     "execute_command": {
       "name": "Execute Command",
-      "description": "Executes a shell command on the OpenWrt router.",
+      "description": "Executes a shell command on the FanchmWrt router.",
       "fields": {
         "entry_id": {
           "name": "Device",
-          "description": "The OpenWrt router."
+          "description": "The FanchmWrt router."
         },
         "command": {
           "name": "Command",
@@ -993,11 +979,11 @@
     },
     "manage_service": {
       "name": "Manage Service",
-      "description": "Manage an init.d service on the OpenWrt router.",
+      "description": "Manage an init.d service on the FanchmWrt router.",
       "fields": {
         "entry_id": {
           "name": "Device",
-          "description": "The OpenWrt router."
+          "description": "The FanchmWrt router."
         },
         "service_name": {
           "name": "Service Name",
@@ -1011,11 +997,11 @@
     },
     "wake_on_lan": {
       "name": "Wake on LAN",
-      "description": "Send a Wake on LAN magic packet to a device via the OpenWrt router.",
+      "description": "Send a Wake on LAN magic packet to a device via the FanchmWrt router.",
       "fields": {
         "target": {
           "name": "Target Router",
-          "description": "The OpenWrt router to send the packet from."
+          "description": "The FanchmWrt router to send the packet from."
         },
         "mac": {
           "name": "MAC Address",
@@ -1029,11 +1015,11 @@
     },
     "uci_get": {
       "name": "UCI Get",
-      "description": "Gets a UCI configuration value from the OpenWrt router.",
+      "description": "Gets a UCI configuration value from the FanchmWrt router.",
       "fields": {
         "entry_id": {
           "name": "Device",
-          "description": "The OpenWrt router."
+          "description": "The FanchmWrt router."
         },
         "config": {
           "name": "Config",
@@ -1051,11 +1037,11 @@
     },
     "uci_set": {
       "name": "UCI Set",
-      "description": "Sets a UCI configuration value on the OpenWrt router and commits the changes.",
+      "description": "Sets a UCI configuration value on the FanchmWrt router and commits the changes.",
       "fields": {
         "entry_id": {
           "name": "Device",
-          "description": "The OpenWrt router."
+          "description": "The FanchmWrt router."
         },
         "config": {
           "name": "Config",
@@ -1081,7 +1067,7 @@
       "fields": {
         "entry_id": {
           "name": "Device",
-          "description": "The OpenWrt router."
+          "description": "The FanchmWrt router."
         }
       }
     },
@@ -1091,7 +1077,7 @@
       "fields": {
         "entry_id": {
           "name": "Device",
-          "description": "The OpenWrt router."
+          "description": "The FanchmWrt router."
         }
       }
     }

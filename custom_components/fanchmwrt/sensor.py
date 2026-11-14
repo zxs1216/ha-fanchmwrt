@@ -178,74 +178,13 @@ async def async_setup_entry(
         )
         _async_setup_storage_sensors(coordinator, entry, new_entities, tracked_keys)
 
-        # VPN Sensors
-        if (
-            perms.read_vpn
-            and pkgs.wireguard is not False
-            and entry.options.get(CONF_ENABLE_VPN, True)
-        ):
-            _async_setup_wireguard_sensors(
-                coordinator, entry, new_entities, tracked_keys
-            )
-        _async_setup_tailscale_sensors(coordinator, entry, new_entities, tracked_keys)
-
-        # Wireless Sensors
-        if perms.read_wireless and pkgs.iwinfo is not False:
-            _async_setup_wireless_sensors(
-                coordinator, entry, new_entities, tracked_keys
-            )
-
-        # Network Sensors
+        # 旁路由精简：VPN（WireGuard/Tailscale/OpenVPN）、无线、
+        # MWAN/SQM/调制解调器等专用传感器已移除，仅保留系统 / 存储 / 网络
         _async_setup_network_sensors(
             coordinator, entry, new_entities, pkgs, tracked_keys
         )
 
-        # Specialized Sensors
-        _async_setup_specialized_sensors(
-            coordinator, entry, new_entities, perms, pkgs, tracked_keys
-        )
-
-        # Device-specific sensors (Dynamic)
-        track_devices = entry.options.get(
-            CONF_TRACK_DEVICES,
-            entry.data.get(CONF_TRACK_DEVICES, DEFAULT_TRACK_DEVICES),
-        )
-        if track_devices:
-            track_wired = entry.options.get(
-                CONF_TRACK_WIRED,
-                entry.data.get(CONF_TRACK_WIRED, DEFAULT_TRACK_WIRED),
-            )
-            skip_random = entry.options.get(
-                CONF_SKIP_RANDOM_MAC, DEFAULT_SKIP_RANDOM_MAC
-            )
-
-            for device in coordinator.data.connected_devices:
-                if not device.mac:
-                    continue
-                mac = device.mac.lower()
-                is_random = is_random_mac(mac)
-
-                if is_random and skip_random:
-                    continue
-                if not track_wired and not device.is_wireless and not is_random:
-                    continue
-
-                # Device diagnostic sensors (Signal, Rates, Noise)
-                key = f"device_{mac.replace(':', '_')}_sensors"
-                if key not in tracked_keys:
-                    tracked_keys.add(key)
-                    new_entities.extend(
-                        _create_device_sensors(coordinator, entry, device)
-                    )
-
-                # NLBWmon sensors
-                if pkgs.nlbwmon:
-                    key = f"nlbwmon_{mac.replace(':', '_')}"
-                    if key not in tracked_keys:
-                        tracked_keys.add(key)
-                        new_entities.extend(
-                            _create_nlbwmon_sensors(coordinator, entry, device)
-                        )
+        # 旁路由精简：按客户端的信号 / 速率 / NLBWmon 传感器已移除
 
         if new_entities:
             async_add_entities(
@@ -394,14 +333,4 @@ async def async_setup_entry(
 
     hass.add_job(_async_cleanup_entities)
 
-    if entry.options.get(
-        CONF_ENABLE_NLBWMON_SENSORS,
-        entry.data.get(CONF_ENABLE_NLBWMON_SENSORS, False),
-    ):
-        async_add_entities([OpenWrtNlbwmonTopHostsSensor(coordinator, entry)])
-
-    if entry.options.get(
-        CONF_ENABLE_SNORT_SENSORS,
-        entry.data.get(CONF_ENABLE_SNORT_SENSORS, False),
-    ):
-        async_add_entities([OpenWrtSnortSensor(coordinator, entry)])
+    # 旁路由精简：NLBWmon Top Hosts / SNORT 告警传感器已移除

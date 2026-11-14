@@ -45,62 +45,9 @@ def _async_setup_network_sensors(
     if not coordinator.data:
         return
 
-    # MWAN3 Metrics
-    for mwan in coordinator.data.mwan_status:
-        for metric in ("latency", "packet_loss"):
-            key = f"mwan_{mwan.interface_name}_{metric}"
-            if key not in tracked_keys:
-                tracked_keys.add(key)
-                entities.append(
-                    OpenWrtMwanMetricSensor(
-                        coordinator, entry, mwan.interface_name, metric, pkgs
-                    )
-                )
+    # 旁路由精简：MWAN3 指标（延迟/丢包）已移除
 
-    # DHCP Lease Count
-    key = "dhcp_lease_count"
-    if key not in tracked_keys:
-        tracked_keys.add(key)
-        entities.append(
-            OpenWrtSensorEntity(
-                coordinator,
-                entry,
-                OpenWrtSensorDescription(
-                    key=key,
-                    name="DHCP Leases",
-                    translation_key="dhcp_lease_count",
-                    state_class=SensorStateClass.MEASUREMENT,
-                    entity_category=EntityCategory.DIAGNOSTIC,
-                    entity_registry_enabled_default=False,
-                    value_fn=lambda data: len(data.dhcp_leases),
-                ),
-            )
-        )
-
-    # Create MQTT presence status sensor conditionally
-    key = "mqtt_presence_status"
-    if entry.options.get(CONF_MQTT_PRESENCE, False) and key not in tracked_keys:
-        tracked_keys.add(key)
-        entities.append(
-            OpenWrtSensorEntity(
-                coordinator,
-                entry,
-                OpenWrtSensorDescription(
-                    key=key,
-                    name="MQTT Presence Status",
-                    translation_key="mqtt_presence_status",
-                    value_fn=lambda data: data.mqtt_presence_status,
-                    attrs_fn=lambda data: (
-                        {"logs": data.mqtt_presence_logs}
-                        if data.mqtt_presence_logs
-                        else {}
-                    ),
-                    available_fn=lambda data: data.mqtt_presence_status is not None,
-                    entity_category=EntityCategory.DIAGNOSTIC,
-                    icon="mdi:home-search",
-                ),
-            )
-        )
+    # 旁路由精简：DHCP 租约计数已移除（DHCP 由主路由负责）
 
     # Add network interface sensors
     for iface in coordinator.data.network_interfaces:

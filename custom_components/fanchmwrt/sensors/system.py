@@ -78,13 +78,6 @@ def _get_system_sensors() -> tuple[OpenWrtSensorDescription, ...]:
             value_fn=lambda data: data.system_resources.cpu_usage,
         ),
         OpenWrtSensorDescription(
-            key="public_ip",
-            name="Public IP",
-            translation_key="public_ip",
-            entity_category=EntityCategory.DIAGNOSTIC,
-            value_fn=lambda data: data.external_ip,
-        ),
-        OpenWrtSensorDescription(
             key="memory_usage",
             name="Memory Usage",
             translation_key="memory_usage",
@@ -120,26 +113,6 @@ def _get_system_sensors() -> tuple[OpenWrtSensorDescription, ...]:
             entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,
             value_fn=lambda data: _bytes_to_mb(data.system_resources.memory_used),
-        ),
-        OpenWrtSensorDescription(
-            key="swap_usage",
-            name="Swap Usage",
-            translation_key="swap_usage",
-            native_unit_of_measurement=PERCENTAGE,
-            state_class=SensorStateClass.MEASUREMENT,
-            entity_category=EntityCategory.DIAGNOSTIC,
-            entity_registry_enabled_default=False,
-            value_fn=lambda data: (
-                round(
-                    data.system_resources.swap_used
-                    / data.system_resources.swap_total
-                    * 100,
-                    1,
-                )
-                if data.system_resources.swap_total > 0
-                else 0
-            ),
-            available_fn=lambda data: data.system_resources.swap_total > 0,
         ),
         OpenWrtSensorDescription(
             key="load_1min",
@@ -316,48 +289,6 @@ def _get_system_sensors() -> tuple[OpenWrtSensorDescription, ...]:
                     1
                     for d in data.all_connected_devices
                     if not d.is_wireless and d.connected
-                ),
-            },
-        ),
-        OpenWrtSensorDescription(
-            key="wireless_clients",
-            name="Wireless Clients",
-            translation_key="wireless_clients",
-            state_class=SensorStateClass.MEASUREMENT,
-            entity_registry_enabled_default=False,
-            value_fn=lambda data: (
-                cnt
-                if (
-                    (
-                        cnt := sum(
-                            1
-                            for d in data.all_connected_devices
-                            if d.is_wireless and d.connected
-                        )
-                    )
-                    > 0
-                    or any(d.is_wireless for d in data.all_connected_devices)
-                )
-                else sum(
-                    w.clients_count
-                    for w in data.wireless_interfaces
-                    if w.clients_count is not None
-                )
-            ),
-        ),
-        OpenWrtSensorDescription(
-            key="neighbor_devices",
-            name="Neighbor Devices",
-            translation_key="neighbor_devices",
-            state_class=SensorStateClass.MEASUREMENT,
-            entity_registry_enabled_default=False,
-            value_fn=lambda data: len(data.ip_neighbors),
-            attrs_fn=lambda data: {
-                "reachable": sum(
-                    1 for n in data.ip_neighbors if n.state.upper() == "REACHABLE"
-                ),
-                "stale": sum(
-                    1 for n in data.ip_neighbors if n.state.upper() == "STALE"
                 ),
             },
         ),

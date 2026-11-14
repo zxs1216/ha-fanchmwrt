@@ -90,73 +90,17 @@ async def async_setup_entry(
                 )
 
         # Dynamic binary sensors
-        _async_setup_mwan_binary_sensors(
-            coordinator, entry, entities, pkgs, tracked_keys
-        )
-
+        # 旁路由精简：mwan / VPN / WireGuard / Tailscale / WPS 状态已移除
         _async_setup_interface_binary_sensors(
             coordinator, entry, entities, tracked_keys
         )
-
-        if entry.options.get(CONF_ENABLE_VPN, True):
-            _async_setup_vpn_binary_sensors(
-                coordinator, entry, entities, pkgs, tracked_keys
-            )
-
-        if entry.options.get(CONF_ENABLE_VPN, True):
-            _async_setup_wireguard_peer_binary_sensors(
-                coordinator, entry, entities, tracked_keys
-            )
-
-        _async_setup_tailscale_binary_sensors(
-            coordinator, entry, entities, tracked_keys
-        )
-
-        # WPS Status
-        key = "wps_active"
-        if key not in tracked_keys:
-            tracked_keys.add(key)
-            entities.append(
-                OpenWrtBinarySensorEntity(
-                    coordinator,
-                    entry,
-                    OpenWrtBinarySensorDescription(
-                        key=key,
-                        name="WPS Active",
-                        translation_key="wps_active",
-                        icon="mdi:wifi-sync",
-                        entity_category=EntityCategory.DIAGNOSTIC,
-                        entity_registry_enabled_default=False,
-                        is_on_fn=lambda data: data.wps_status.enabled,
-                    ),
-                )
-            )
 
         if perms.read_services and entry.options.get(CONF_ENABLE_SERVICES, True):
             _async_setup_service_binary_sensors(
                 coordinator, entry, entities, tracked_keys
             )
 
-        # Batman Mesh Active
-        if pkgs.batman_adv or pkgs.batctl:
-            key = "batman_mesh_active"
-            if key not in tracked_keys:
-                tracked_keys.add(key)
-                entities.append(
-                    OpenWrtBinarySensorEntity(
-                        coordinator,
-                        entry,
-                        OpenWrtBinarySensorDescription(
-                            key=key,
-                            name="Batman Mesh Active",
-                            translation_key="batman_mesh_active",
-                            icon="mdi:transit-connection-variant",
-                            entity_category=EntityCategory.DIAGNOSTIC,
-                            is_on_fn=lambda data: data.batman_mesh_active,
-                            available_fn=lambda data: data.permissions.read_batman,
-                        ),
-                    )
-                )
+        # 旁路由精简：Batman Mesh 状态已移除
 
         if entities:
             async_add_entities(

@@ -78,16 +78,7 @@ async def async_setup_entry(
         # Interface buttons
         _add_interface_buttons(coordinator, entry, client, tracked_keys, new_entities)
 
-        # Wireless buttons (WPS Push)
-        _add_wireless_buttons(coordinator, entry, client, tracked_keys, new_entities)
-
-        # Extra service buttons (AdBlock, etc.)
-        _add_extra_service_buttons(
-            coordinator, entry, client, tracked_keys, new_entities
-        )
-
-        # Device-specific buttons (WoL, Kick)
-        _add_device_buttons(coordinator, entry, client, tracked_keys, new_entities)
+        # 旁路由精简：WPS / AdBlock / WoL / Kick 按钮已移除
 
         if new_entities:
             async_add_entities(

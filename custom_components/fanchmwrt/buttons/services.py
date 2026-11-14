@@ -44,6 +44,7 @@ def _get_kick_button_cls():
 
 _LOGGER = logging.getLogger(__name__)
 
+# 旁路由精简：仅保留重启按钮（WPS / 备份属无线与固件场景，已移除）
 BUTTONS: tuple[OpenWrtButtonDescription, ...] = (
     OpenWrtButtonDescription(
         key="reboot",
@@ -52,27 +53,6 @@ BUTTONS: tuple[OpenWrtButtonDescription, ...] = (
         device_class=ButtonDeviceClass.RESTART,
         entity_category=EntityCategory.CONFIG,
         press_fn=lambda client: client.reboot(),
-    ),
-    OpenWrtButtonDescription(
-        key="wps_start",
-        name="Start WPS",
-        translation_key="wps_start",
-        entity_category=EntityCategory.CONFIG,
-        press_fn=lambda client: client.set_wps(True),
-    ),
-    OpenWrtButtonDescription(
-        key="wps_cancel",
-        name="Cancel WPS",
-        translation_key="wps_cancel",
-        entity_category=EntityCategory.CONFIG,
-        press_fn=lambda client: client.set_wps(False),
-    ),
-    OpenWrtButtonDescription(
-        key="create_backup",
-        name="Create Backup",
-        translation_key="create_backup",
-        entity_category=EntityCategory.CONFIG,
-        press_fn=lambda client: client.create_backup(),
     ),
 )
 

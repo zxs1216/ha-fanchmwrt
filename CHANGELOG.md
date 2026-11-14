@@ -1,5 +1,52 @@
 # Changelog
 
+## v3.1.0 — 旁路由深度精简、单步登录与完整中文
+
+### 实体精简（旁路由场景）
+
+**移除的实体类别**
+
+- 按钮：Start/Cancel WPS、Create Backup、WoL、Kick、AdBlock/Ban-IP 等
+- 开关：WPS、无线 Radio、防火墙、访问控制、SQM、VPN、LED、AdBlock/Simple AdBlock/Ban-IP
+- 二元传感器：WPS 状态、Batman Mesh、MWAN 在线、VPN/WireGuard/Tailscale 状态
+- 传感器：公网 IP、无线客户端数、邻居设备、Swap、DHCP 租约数、
+  WireGuard/Tailscale/OpenVPN 流量、MWAN 指标、QModem、Batman Mesh、
+  LLDP 邻居、NLBWmon、SNORT、MQTT 在线检测状态
+
+**保留**：CPU / 内存 / 负载 / 温度 / 运行时间 / 存储（含 overlay）/ 连接跟踪数 /
+已连接客户端数 / 系统日志 / 进程排行 / 接口速率与地址 / 接口连接状态 / 服务开关 / 重启按钮
+
+**历史实体清理**：新增 `purge_removed_entities()`，启动时按 unique_id 片段
+自动删除注册表中遗留的已移除类别实体（约 29 类模式）。
+
+### 登录精简
+
+- 原多步流程（连接方式选择 → 主机 → 凭据 → 权限确认 → 软件包 → 追踪选择…）
+  合并为**单步表单**：主机地址 / 用户名 / 密码
+- 连接方式固定 ubus，端口与路径取默认值；验证通过后直接创建条目
+- 默认选项预设为旁路由场景（设备跟踪关、服务监控开、VPN/SQM/LED/防火墙关）
+
+### 选项精简
+
+- 配置选项收敛为 6 项主要设置：轮询间隔、DHCP 软件、服务开关、
+  防火墙开关、VPN 传感器、负载传感器
+- 移除固件更新 / 备份 / GPS / MQTT / 追踪等十余项与旁路由无关的选项
+
+### 品牌
+
+- 全部 UI 字符串中的 "OpenWrt" 替换为 "FanchmWrt"（配置向导、选项页、错误提示、Issues 文案）
+- 新图标：蓝底白色路由器造型（机身 + 双天线 + 指示灯 + 网口），256×256
+
+### 中文
+
+- `zh-Hans.json` 覆盖 strings.json 全部 **493/493** 键（100%），
+  包括配置向导、选项、实体名称、错误提示、Issues、服务字段
+
+### 已知限制
+
+- OpenClash 独立设备与节点控制仍在计划中（v3.2）
+- VPN / SQM / Batman 等内部模块代码保留（未创建实体），待后续版本清理
+
 ## v3.0.4 — 修复启动报错
 
 ### 修复

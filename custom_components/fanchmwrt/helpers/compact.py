@@ -64,3 +64,52 @@ def purge_aux_devices(hass: Any, entry: ConfigEntry, allowed: set[str]) -> int:
         registry.async_remove_device(device.id)
         removed += 1
     return removed
+
+
+# 旁路由精简模式下不再创建的实体，其 unique_id 片段。
+# 用于清理注册表中历史遗留的同名实体（restored 实体不会自动消失）。
+REMOVED_ENTITY_PATTERNS: tuple[str, ...] = (
+    "_wps",
+    "_create_backup",
+    "_public_ip",
+    "_wireless_clients",
+    "_neighbor_devices",
+    "_wg_",  # WireGuard 接口与 peer
+    "_tsvpn_",  # Tailscale
+    "_vpn_",  # OpenVPN / VPN 接口状态
+    "_sqm_",
+    "_led_",
+    "_qmodem",
+    "_mwan_",
+    "_mesh_",
+    "batman",
+    "_nlbwmon_",
+    "top_bandwidth_hosts",
+    "_snort_alerts",
+    "_adblock",
+    "_simple_adblock",
+    "_banip",
+    "_access_",
+    "_wireless_",
+    "_radio_",
+    "_wol",
+    "_kick_",
+    "_lldp_",
+    "_mqtt_presence_status",
+    "_dhcp_lease_count",
+    "_swap_usage",
+)
+
+
+def purge_removed_entities(hass: Any, entry: ConfigEntry) -> int:
+    """删除注册表中属于已移除功能类别的实体。"""
+    from homeassistant.helpers import entity_registry as er  # noqa: PLC0415
+
+    registry = er.async_get(hass)
+    removed = 0
+    for entity in list(er.async_entries_for_config_entry(registry, entry.entry_id)):
+        unique_id = (entity.unique_id or "").lower()
+        if any(pattern in unique_id for pattern in REMOVED_ENTITY_PATTERNS):
+            registry.async_remove(entity.entity_id)
+            removed += 1
+    return removed

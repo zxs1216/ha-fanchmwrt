@@ -21,9 +21,20 @@ from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from ..const import (
     CONF_CONNECTION_TYPE,
+    CONF_DHCP_SOFTWARE,
+    CONF_ENABLE_FIREWALL,
+    CONF_ENABLE_LED,
+    CONF_ENABLE_LOAD,
+    CONF_ENABLE_SERVICES,
+    CONF_ENABLE_SQM,
+    CONF_ENABLE_VPN,
+    CONF_TRACK_DEVICES,
+    CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_LUCI_RPC,
     CONNECTION_TYPE_SSH,
     CONNECTION_TYPE_UBUS,
+    DEFAULT_PORT_UBUS,
+    DHCP_SOFTWARE_AUTO,
     DOCS_URL,
     DOMAIN,
 )
@@ -45,29 +56,76 @@ class DiscoveryFlowMixin:
         self,
         user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
-        """Handle the initial step."""
+        """Handle the initial step: single-form quick setup.
+
+        旁路由精简：一步完成——主机 / 用户名 / 密码。
+        连接方式固定 ubus，端口与路径使用默认值，成功即创建条目。
+        """
         if user_input is not None:
-            if user_input.get("flow_type") == "manual":
-                return await self.async_step_manual_entry()
-            return await self.async_step_discovery()
+            self._data.update(
+                {
+                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_USERNAME: user_input[CONF_USERNAME],
+                    CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    CONF_CONNECTION_TYPE: CONNECTION_TYPE_UBUS,
+                    CONF_USE_SSL: False,
+                    CONF_VERIFY_SSL: False,
+                    CONF_PORT: DEFAULT_PORT_UBUS,
+                    CONF_UBUS_PATH: DEFAULT_UBUS_PATH,
+                    CONF_DHCP_SOFTWARE: DHCP_SOFTWARE_AUTO,
+                    # 旁路由默认选项
+                    CONF_TRACK_DEVICES: False,
+                    CONF_UPDATE_INTERVAL: 60,
+                    CONF_ENABLE_FIREWALL: False,
+                    CONF_ENABLE_SERVICES: True,
+                    CONF_ENABLE_VPN: False,
+                    CONF_ENABLE_LED: False,
+                    CONF_ENABLE_SQM: False,
+                    CONF_ENABLE_LOAD: True,
+                }
+            )
+
+            error = await self._test_connection(self._data)
+            if error:
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=self._quick_setup_schema(user_input),
+                    errors={"base": error},
+                )
+
+            await self._async_set_unique_id_and_check()
+            return await self._create_entry()
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        "flow_type",
-                        default="manual",
-                    ): selector.SelectSelector(
-                        selector.SelectSelectorConfig(
-                            options=["discovery", "manual"],
-                            translation_key="flow_type",
-                            mode=selector.SelectSelectorMode.DROPDOWN,
-                        ),
-                    ),
-                },
-            ),
+            data_schema=self._quick_setup_schema(),
             description_placeholders={"docs_url": DOCS_URL},
+        )
+
+    def _quick_setup_schema(
+        self, previous: dict[str, Any] | None = None
+    ) -> vol.Schema:
+        """Return the single-form quick setup schema."""
+        previous = previous or {}
+        return vol.Schema(
+            {
+                vol.Required(
+                    CONF_HOST,
+                    default=previous.get(
+                        CONF_HOST, self._data.get(CONF_HOST, "192.168.1.1")
+                    ),
+                ): str,
+                vol.Required(
+                    CONF_USERNAME,
+                    default=previous.get(
+                        CONF_USERNAME, self._data.get(CONF_USERNAME, "root")
+                    ),
+                ): str,
+                vol.Required(
+                    CONF_PASSWORD,
+                    default=previous.get(CONF_PASSWORD, self._data.get(CONF_PASSWORD, "")),
+                ): str,
+            }
         )
 
     async def async_step_discovery(
