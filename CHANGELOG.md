@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.0.2 — 修正 HACS 安装路径
+
+### 修复
+
+- 移除 `hacs.json` 中的 `zip_release` / `filename`
+- 原因：HACS 会把 zip 整包解压到 `config/custom_components/<domain>/`，而包内已含 `custom_components/<domain>/` 前缀，导致安装后出现 `custom_components/fanchmwrt/custom_components/fanchmwrt/` 的双层嵌套，HA 无法识别该集成
+- 改为标准源码安装路径后，HACS 会正确复制 `custom_components/fanchmwrt`
+
 ## v3.0.1 — 补齐 HACS 合规资源
 
 ### 新增
