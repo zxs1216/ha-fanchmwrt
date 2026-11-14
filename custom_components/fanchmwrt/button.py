@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .helpers.compact import filter_router_only, router_identifier_set
+
 import logging
 import re
 
@@ -88,7 +90,9 @@ async def async_setup_entry(
         _add_device_buttons(coordinator, entry, client, tracked_keys, new_entities)
 
         if new_entities:
-            async_add_entities(new_entities)
+            async_add_entities(
+                filter_router_only(new_entities, router_identifier_set(entry, coordinator))
+            )
 
     # Register listener and run initial discovery
     entry.async_on_unload(coordinator.async_add_listener(_async_add_new_entities))

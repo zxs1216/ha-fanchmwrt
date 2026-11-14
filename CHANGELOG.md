@@ -1,5 +1,29 @@
 # Changelog
 
+## v3.0.3 — 旁路由精简：只保留路由器主设备
+
+### 移除的设备条目
+
+- 2 × Wireless Radio（2.4 GHz / 5 GHz）
+- 2 × Wireless SSID（SSID FanchmWrt 2.4 GHz / 5 GHz）
+- 6 × 客户端 MAC 设备（78:df:72:9f:25:bd 等）
+
+### 移除的实体
+
+- 上述 10 个辅助设备下的全部实体（每个客户端 6 个、每个 radio 1 个、每个 SSID 6 个）
+- 引用非路由器设备的带宽 / 设备诊断 / 无线 / WPS 等实体，注册前统一过滤
+
+### 实现
+
+- 新增 `helpers/compact.py`：按 device identifier 过滤实体，并在 setup 时清理注册表里的历史辅助设备
+- `sensor.py` / `switch.py` / `button.py` / `binary_sensor.py`：注册前调用过滤
+- `coordinator/device_registry.py`：不再注册 Wireless Radio / Wireless SSID 设备
+- `__init__.py`：set up 时删除除路由器主设备外的所有设备（连带其实体）
+
+### 保留
+
+- `JCG Q30 PRO` 一个设备条目，及其系统、网络、存储、服务类实体
+
 ## v3.0.2 — 修正 HACS 安装路径
 
 ### 修复

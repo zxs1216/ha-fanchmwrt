@@ -6,6 +6,8 @@ All entities are grouped under the router device.
 
 from __future__ import annotations
 
+from .helpers.compact import filter_router_only, router_identifier_set
+
 import logging
 
 from homeassistant.components.sensor import SensorEntity
@@ -246,7 +248,9 @@ async def async_setup_entry(
                         )
 
         if new_entities:
-            async_add_entities(new_entities)
+            async_add_entities(
+                filter_router_only(new_entities, router_identifier_set(entry, coordinator))
+            )
 
     # Initial discovery and listener registration
     _async_discover_entities()

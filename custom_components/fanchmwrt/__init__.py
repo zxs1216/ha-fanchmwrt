@@ -31,6 +31,7 @@ from homeassistant.helpers import entity_registry as er
 from .api.luci_rpc import LuciRpcAuthError, LuciRpcError
 from .api.ssh import SshAuthError, SshError
 from .api.ubus import UbusAuthError, UbusError
+from .helpers.compact import purge_aux_devices, router_identifier_set
 from .const import (
     DATA_CLIENT,
     DATA_COORDINATOR,
@@ -281,6 +282,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         # Clean up any entities or devices from disabled features
         await _async_cleanup_disabled_features(hass, entry)
+
+        # 旁路由精简模式：清除历史遗留的无线 / 客户端辅助设备及其全部实体
+        removed_aux = purge_aux_devices(
+            hass, entry, router_identifier_set(entry, coordinator)
+        )
+        if removed_aux:
+            _LOGGER.info("FanchmWrt: removed %s auxiliary devices", removed_aux)
 
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN][entry.entry_id] = {
