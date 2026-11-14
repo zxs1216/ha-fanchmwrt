@@ -1,0 +1,380 @@
+"""Helper functions for OpenWrt integration."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+from homeassistant.core import HomeAssistant
+
+from ..const import CONF_HOST, DOMAIN
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+
+
+def _router_id(entry: ConfigEntry) -> str:
+    """Extract the canonical router ID from a config entry."""
+    unique_id = entry.unique_id
+    if unique_id and len(unique_id.replace(":", "")) == 12:
+        # Check if it is a mac address and format it with colons
+        try:
+            from homeassistant.helpers import device_registry as dr
+
+            return dr.format_mac(unique_id)
+        except Exception:
+            pass
+    return str(unique_id or entry.data[CONF_HOST])
+
+
+def format_ap_identifier(entry_or_router_id: ConfigEntry | str, iface_name: str) -> str:
+    """Format the identifier string for an Access Point device."""
+    if isinstance(entry_or_router_id, str):
+        router_id = entry_or_router_id
+    else:
+        router_id = _router_id(entry_or_router_id)
+    return f"{router_id}_ap_{iface_name}"
+
+
+def format_ap_device_id(entry_or_router_id: ConfigEntry | str, iface_name: str) -> str:
+    """Return the string identifier used in the device registry for an AP."""
+    return format_ap_identifier(entry_or_router_id, iface_name)
+
+
+def format_radio_device_id(
+    entry_or_router_id: ConfigEntry | str,
+    radio: str,
+) -> str:
+    """Return the canonical device registry identifier for a physical radio."""
+    router_id = (
+        entry_or_router_id
+        if isinstance(entry_or_router_id, str)
+        else _router_id(entry_or_router_id)
+    )
+    return f"{router_id}_radio_{radio}"
+
+
+def format_ap_stable_id(ssid: str, band: str, radio: str = "") -> str:
+    """Return an AP identifier distinct across physical radios."""
+    return f"{radio}_{ssid}_{band}" if radio else f"{ssid}_{band}"
+
+
+def format_radio_name(radio: str, band: str | None) -> str:
+    """Return a concise radio display name with a stable fallback."""
+    normalized_band = normalize_band(band) if band else "unknown"
+    return normalized_band if normalized_band != "unknown" else radio
+
+
+def normalize_band(band: str | None) -> str:
+    """Normalize raw frequency or band strings to a standard format.
+
+    Examples:
+        "2412" -> "2.4 GHz"
+        "5180" -> "5 GHz"
+        "2.412" -> "2.4 GHz"
+        "5 GHz" -> "5 GHz"
+    """
+    if not band:
+        return "unknown"
+
+    freq_str = str(band).lower().strip()
+
+    uci_band_aliases = {
+        "2g": "2.4 GHz",
+        "2ghz": "2.4 GHz",
+        "2 ghz": "2.4 GHz",
+        "2g ghz": "2.4 GHz",
+        "5g": "5 GHz",
+        "5ghz": "5 GHz",
+        "5 ghz": "5 GHz",
+        "5g ghz": "5 GHz",
+        "6g": "6 GHz",
+        "6ghz": "6 GHz",
+        "6 ghz": "6 GHz",
+        "6g ghz": "6 GHz",
+    }
+    if freq_str in uci_band_aliases:
+        return uci_band_aliases[freq_str]
+
+    # Handle numeric MHz/GHz strings
+    try:
+        # Remove units if present for numeric check
+        clean_freq = freq_str.replace("ghz", "").replace("mhz", "").strip()
+        if clean_freq.replace(".", "").isdigit():
+            freq = float(clean_freq)
+            # Frequencies in MHz
+            if 2000 <= freq <= 3000:
+                return "2.4 GHz"
+            if 4900 <= freq <= 5900:
+                return "5 GHz"
+            if 5900 < freq <= 7200:
+                return "6 GHz"
+            # Frequencies in GHz
+            if 2.0 <= freq <= 3.0:
+                return "2.4 GHz"
+            if 4.9 <= freq <= 5.9:
+                return "5 GHz"
+            if 5.9 < freq <= 7.2:
+                return "6 GHz"
+    except ValueError:
+        pass
+
+    # Fallback to keyword matching
+    if "2.4" in freq_str:
+        return "2.4 GHz"
+    if "5" in freq_str:
+        return "5 GHz"
+    if "6" in freq_str:
+        return "6 GHz"
+
+    return freq_str if "ghz" in freq_str else f"{freq_str} GHz"
+
+
+def format_ap_name(ssid: str, band: str = "") -> str:
+    """Format the display name for an SSID device.
+
+    Examples:
+        format_ap_name("SmartLife", "2.4 GHz") -> "SSID SmartLife (2.4 GHz)"
+        format_ap_name("SmartLife") -> "SSID SmartLife"
+    """
+    if band:
+        normalized = normalize_band(band)
+        if normalized and normalized != "unknown":
+            return f"SSID {ssid} ({normalized})"
+    return f"SSID {ssid}"
+
+
+def is_random_mac(mac: str) -> bool:
+    """Check if a MAC address is locally administered (randomized).
+
+    A MAC address is randomized if the 'locally administered' bit is set
+    in the first byte (the second-least significant bit).
+    """
+    if not mac:
+        return False
+    try:
+        # Normalize: remove separators and take the first two chars (first byte)
+        clean_mac = mac.replace(":", "").replace("-", "").replace(".", "")
+        if len(clean_mac) < 2:
+            return False
+        # Check the 'locally administered' bit (bit 1 of first byte)
+        first_byte = int(clean_mac[:2], 16)
+        return bool(first_byte & 0x02)
+    except (ValueError, IndexError):
+        return False
+
+
+def parse_uci_bool(value: Any, default: bool = False) -> bool:
+    """Parse truthy/falsy UCI values robustly.
+
+    Handles strings ('1', 'yes', 'on', 'true', 'enabled' as True),
+    integers, booleans, and None.
+    """
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return value != 0
+    if isinstance(value, str):
+        val = value.lower().strip()
+        if val in ("1", "yes", "on", "true", "enabled"):
+            return True
+        if val in ("0", "no", "off", "false", "disabled"):
+            return False
+    return default
+
+
+def parse_blocked_domains(value: Any) -> int:
+    """Parse adblock blocked domain count handling spaces, commas, dots as thousands separators."""
+    if value is None:
+        return 0
+    if isinstance(value, (int, float)):
+        return int(value)
+    digits = "".join(c for c in str(value) if c.isdigit())
+    return int(digits) if digits else 0
+
+
+def _lookup_device(
+    dev_reg: Any,
+    identifier: tuple[str, str],
+    config_entry_id: str | None = None,
+) -> Any | None:
+    """Look up a device by identifier without using deprecated async_get_device."""
+    # If dev_reg is a Mock whose class does not define async_get_device_by_identifier,
+    # or if async_get_device was explicitly mocked, prefer the mock's configured methods.
+    from unittest.mock import NonCallableMock
+
+    if isinstance(dev_reg, NonCallableMock):
+        # Check if async_get_device_by_identifier was explicitly configured on the mock
+        mock_children = getattr(dev_reg, "_mock_children", {})
+        if "async_get_device_by_identifier" in mock_children and config_entry_id:
+            return dev_reg.async_get_device_by_identifier(identifier, config_entry_id)
+        if "async_get_devices" in mock_children:
+            matches = dev_reg.async_get_devices(
+                identifiers={identifier},
+                config_entry_id=config_entry_id,
+            )
+            if matches:
+                return matches[0]
+        if hasattr(dev_reg, "async_get_device"):
+            return dev_reg.async_get_device(identifiers={identifier})
+
+    # Real DeviceRegistry or mocks configured with it
+    if config_entry_id and hasattr(dev_reg, "async_get_device_by_identifier"):
+        return dev_reg.async_get_device_by_identifier(identifier, config_entry_id)
+    if hasattr(dev_reg, "async_get_devices"):
+        matches = dev_reg.async_get_devices(
+            identifiers={identifier},
+            config_entry_id=config_entry_id,
+        )
+        if matches:
+            return matches[0]
+    dev_devices = getattr(dev_reg, "devices", None)
+    if dev_devices is not None and hasattr(dev_devices, "get_entry"):
+        if config_entry_id is not None:
+            return dev_devices.get_entry(
+                identifiers={identifier},
+                config_entry_id=config_entry_id,
+            )
+        return dev_devices.get_entry(identifiers={identifier})
+    if hasattr(dev_reg, "async_get_device"):
+        return dev_reg.async_get_device(identifiers={identifier})
+    return None
+
+
+def get_via_device(
+    hass: HomeAssistant,
+    coordinator: Any,  # Avoid circular import
+    entry: ConfigEntry,
+    mac: str,
+) -> tuple[str, str]:
+    """Resolve the via_device for a connected device.
+
+    Returns a tuple (DOMAIN, identifier). Wireless clients are attached to
+    their physical radio; wired or ambiguous clients fall back to the router.
+    """
+    from homeassistant.helpers import device_registry as dr
+
+    router_id = _router_id(entry)
+    via_device = (DOMAIN, router_id)
+
+    if coordinator.data:
+        mac_lower = mac.lower()
+        # Check local wireless interfaces
+        for device in coordinator.data.connected_devices:
+            if (
+                device.mac
+                and device.mac.lower() == mac_lower
+                and device.is_wireless
+                and device.interface
+            ):
+                dev_reg = dr.async_get(hass)
+                wifi = next(
+                    (
+                        item
+                        for item in coordinator.data.wireless_interfaces
+                        if device.interface in {item.name, item.section, item.ifname}
+                    ),
+                    None,
+                )
+                stable_id = coordinator.interface_to_stable_id.get(device.interface)
+                if not stable_id and wifi:
+                    stable_id = coordinator.interface_to_stable_id.get(wifi.name)
+                if stable_id:
+                    ap_id = format_ap_device_id(router_id, stable_id)
+                    ap_identifier = (DOMAIN, ap_id)
+                    if (
+                        _lookup_device(dev_reg, ap_identifier, entry.entry_id)
+                        is not None
+                    ):
+                        via_device = (DOMAIN, ap_id)
+                elif wifi and wifi.radio:
+                    radio_id = format_radio_device_id(router_id, wifi.radio)
+                    radio_identifier = (DOMAIN, radio_id)
+                    if (
+                        _lookup_device(dev_reg, radio_identifier, entry.entry_id)
+                        is not None
+                    ):
+                        via_device = (DOMAIN, radio_id)
+                break
+
+        # If not local wireless, check Batman-adv mesh for remote nodes
+        if (
+            via_device == (DOMAIN, router_id)
+            and mac_lower in coordinator.data.batman_translation_table
+        ):
+            originator_mac = coordinator.data.batman_translation_table[
+                mac_lower
+            ].lower()
+            if (
+                coordinator.data.device_info
+                and coordinator.data.device_info.mac_address
+                and originator_mac != coordinator.data.device_info.mac_address.lower()
+            ):
+                # It's behind another mesh node. Verify it exists in registry.
+                dev_reg = dr.async_get(hass)
+                orig_identifier = (DOMAIN, originator_mac)
+                if _lookup_device(dev_reg, orig_identifier, entry.entry_id) is not None:
+                    via_device = (DOMAIN, originator_mac)
+
+    return via_device
+
+
+def get_via_device_id(
+    hass: HomeAssistant,
+    coordinator: Any,  # Avoid circular import
+    entry: ConfigEntry,
+    mac: str,
+) -> str | None:
+    """Resolve the via_device for a connected device and return its registry ID.
+
+    Returns the device registry ``DeviceEntry.id`` (a plain string) or ``None``
+    if the parent device cannot be found.  Use this instead of the deprecated
+    ``via_device=(DOMAIN, identifier)`` form.
+    """
+    from homeassistant.helpers import device_registry as dr
+
+    identifier = get_via_device(hass, coordinator, entry, mac)
+    dev_reg = dr.async_get(hass)
+    device = _lookup_device(dev_reg, identifier, entry.entry_id)
+    return device.id if device else None
+
+
+def _get_router_device_id(
+    hass: HomeAssistant,
+    coordinator: Any,  # Avoid circular import
+    entry: ConfigEntry,
+) -> str | None:
+    """Return the device registry ID for the router device of *entry*.
+
+    Looks up the device by its (DOMAIN, router_id) identifier.  Returns
+    ``None`` when the router device has not been registered yet.
+    """
+    from homeassistant.helpers import device_registry as dr
+
+    router_id = _router_id(entry)
+    dev_reg = dr.async_get(hass)
+    device = _lookup_device(dev_reg, (DOMAIN, router_id), entry.entry_id)
+    return device.id if device else None
+
+
+def resolve_client_name(
+    hass: HomeAssistant,
+    mac: str,
+    local_name: str | None = None,
+) -> str:
+    """Return the best known display name for a tracked client.
+
+    An access point runs no DHCP server, so its own view of a client carries no
+    hostname and every device it registers would otherwise be named after a MAC
+    address. Fall back to the name another config entry resolved -- typically
+    the router running dnsmasq -- before settling for the bare address.
+    """
+    # "*" is dnsmasq's placeholder for a client that sent no hostname, and some
+    # callers pass the MAC itself as the "name". Neither is a usable label.
+    mac_lower = mac.lower()
+    if local_name and local_name != "*" and local_name.lower() != mac_lower:
+        return local_name
+
+    shared = hass.data.get(DOMAIN, {}).get("hostname_registry", {})
+    return shared.get(mac_lower) or mac

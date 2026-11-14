@@ -1,0 +1,295 @@
+{
+  "entity": {
+    "sensor": {
+      "memory_usage": {
+        "name": "内存使用率"
+      },
+      "cpu_usage": {
+        "name": "CPU 使用率"
+      },
+      "memory_used": {
+        "name": "已用内存"
+      },
+      "swap_usage": {
+        "name": "交换空间使用率"
+      },
+      "load_1min": {
+        "name": "负载 (1分钟)"
+      },
+      "load_5min": {
+        "name": "负载 (5分钟)"
+      },
+      "load_15min": {
+        "name": "负载 (15分钟)"
+      },
+      "uptime": {
+        "name": "运行时间"
+      },
+      "temperature": {
+        "name": "温度"
+      },
+      "storage_usage": {
+        "name": "存储使用率"
+      },
+      "public_ip": {
+        "name": "公网 IP"
+      },
+      "kernel_version": {
+        "name": "内核版本"
+      },
+      "architecture": {
+        "name": "架构"
+      },
+      "filesystem_free": {
+        "name": "可用文件系统空间"
+      },
+      "system_logs": {
+        "name": "系统日志"
+      },
+      "connected_clients": {
+        "name": "已连接客户端"
+      },
+      "wireless_clients": {
+        "name": "无线客户端"
+      },
+      "wifi_clients": {
+        "name": "客户端数量"
+      },
+      "wifi_signal": {
+        "name": "信号强度"
+      },
+      "wifi_channel": {
+        "name": "频道"
+      },
+      "wifi_txpower": {
+        "name": "发射功率"
+      },
+      "wifi_htmode": {
+        "name": "HT 模式"
+      },
+      "wifi_hwmode": {
+        "name": "硬件模式"
+      },
+      "wifi_quality": {
+        "name": "信号质量"
+      },
+      "wifi_bitrate": {
+        "name": "比特率"
+      },
+      "wifi_noise": {
+        "name": "噪声水平"
+      },
+      "net_rx": {
+        "name": "{interface} 接收"
+      },
+      "net_tx": {
+        "name": "{interface} 发送"
+      },
+      "net_ipv4": {
+        "name": "{interface} IPv4 地址"
+      },
+      "net_ipv6": {
+        "name": "{interface} IPv6 地址"
+      },
+      "net_rx_rate": {
+        "name": "{interface} 接收速率"
+      },
+      "net_tx_rate": {
+        "name": "{interface} 发送速率"
+      },
+      "net_speed": {
+        "name": "{interface} 链路速度"
+      },
+      "net_uptime": {
+        "name": "{interface} 运行时间"
+      },
+      "net_rx_errors": {
+        "name": "接收错误"
+      },
+      "net_tx_errors": {
+        "name": "发送错误"
+      },
+      "net_rx_dropped": {
+        "name": "接收丢弃"
+      },
+      "net_tx_dropped": {
+        "name": "发送丢弃"
+      },
+      "net_collisions": {
+        "name": "冲突"
+      },
+      "net_multicast": {
+        "name": "组播"
+      },
+      "device_signal": {
+        "name": "信号强度"
+      },
+      "device_rx_rate": {
+        "name": "接收速率"
+      },
+      "device_tx_rate": {
+        "name": "发送速率"
+      },
+      "device_noise": {
+        "name": "噪声水平"
+      },
+      "device_connection_type": {
+        "name": "连接类型"
+      },
+      "vpn_rx": {
+        "name": "{interface} 接收"
+      },
+      "vpn_tx": {
+        "name": "{interface} 发送"
+      },
+      "vpn_peers": {
+        "name": "VPN 对等节点"
+      },
+      "dhcp_lease_count": {
+        "name": "DHCP 租约"
+      },
+      "wan_latency": {
+        "name": "WAN 延迟"
+      },
+      "conntrack_count": {
+        "name": "连接跟踪"
+      },
+      "adblock_status": {
+        "name": "AdBlock 状态"
+      },
+      "adblock_blocked": {
+        "name": "AdBlock 已拦截域名"
+      },
+      "simple_adblock_blocked": {
+        "name": "Simple AdBlock 已拦截域名"
+      },
+      "banip_banned": {
+        "name": "Ban-IP 已封禁 IP"
+      },
+      "banip_blocked": {
+        "name": "Ban-IP 已拦截数据包"
+      },
+      "sqm_interface": {
+        "name": "SQM 接口"
+      },
+      "sqm_qdisc": {
+        "name": "SQM Qdisc"
+      },
+      "sqm_script": {
+        "name": "SQM 脚本"
+      },
+      "mwan_ratio": {
+        "name": "{interface} 在线率"
+      },
+      "batman_originators_count": {
+        "name": "Batman Mesh 源节点"
+      },
+      "batman_neighbors_count": {
+        "name": "Batman Mesh 邻居节点"
+      },
+      "batman_gateways_count": {
+        "name": "Batman Mesh 网关"
+      },
+      "batman_tq": {
+        "name": "Mesh 链路质量 (TQ)"
+      },
+      "lldp_neighbor": {
+        "name": "LLDP 邻居"
+      },
+      "neighbor_devices": {
+        "name": "邻居设备"
+      },
+      "mount_storage_total": {
+        "name": "{mount} 总存储空间"
+      },
+      "mount_storage_used": {
+        "name": "{mount} 已用存储空间"
+      },
+      "mount_storage_free": {
+        "name": "{mount} 可用存储空间"
+      },
+      "mount_storage_usage": {
+        "name": "{mount} 存储使用率"
+      },
+      "qmodem_manufacturer": {
+        "name": "调制解调器制造商"
+      },
+      "qmodem_revision": {
+        "name": "调制解调器版本"
+      },
+      "qmodem_temperature": {
+        "name": "调制解调器温度"
+      },
+      "qmodem_voltage": {
+        "name": "调制解调器电压"
+      },
+      "qmodem_connect_status": {
+        "name": "调制解调器连接状态"
+      },
+      "qmodem_sim_status": {
+        "name": "SIM 卡状态"
+      },
+      "qmodem_isp": {
+        "name": "互联网服务提供商"
+      },
+      "qmodem_sim_slot": {
+        "name": "SIM 卡插槽"
+      },
+      "qmodem_lte_rsrp": {
+        "name": "LTE RSRP"
+      },
+      "qmodem_lte_rsrq": {
+        "name": "LTE RSRQ"
+      },
+      "qmodem_lte_rssi": {
+        "name": "LTE RSSI"
+      },
+      "qmodem_lte_sinr": {
+        "name": "LTE SINR"
+      },
+      "qmodem_nr5g_rsrp": {
+        "name": "5G NR RSRP"
+      },
+      "qmodem_nr5g_rsrq": {
+        "name": "5G NR RSRQ"
+      },
+      "qmodem_nr5g_sinr": {
+        "name": "5G NR SINR"
+      },
+      "qmodem_gps_latitude": {
+        "name": "调制解调器 GPS 纬度"
+      },
+      "qmodem_gps_longitude": {
+        "name": "调制解调器 GPS 经度"
+      },
+      "qmodem_gps_last_update": {
+        "name": "调制解调器 GPS 最后更新"
+      },
+      "qmodem_gps_last_update_attempted": {
+        "name": "调制解调器 GPS 最后尝试更新"
+      },
+      "qmodem_gps_last_update_successful": {
+        "name": "调制解调器 GPS 最后成功更新"
+      },
+      "qmodem_gps_last_update_ok": {
+        "name": "调制解调器 GPS 最后更新状态"
+      },
+      "mqtt_presence_status": {
+        "name": "MQTT 在线状态"
+      }
+    },
+    "binary_sensor": {
+      "reboot_required": {
+        "name": "需要重启"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "重启"
+      },
+      "wake_on_lan": {
+        "name": "网络唤醒"
+      }
+    }
+  }
+}

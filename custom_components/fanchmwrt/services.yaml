@@ -1,0 +1,156 @@
+reboot:
+  description: Reboots the OpenWrt router.
+  fields:
+    entry_id:
+      description: The config entry ID of the router to reboot.
+      example: 1234567890abcdef1234567890abcdef
+      required: true
+      selector:
+        config_entry:
+          integration: openwrt
+
+execute_command:
+  description: Executes a shell command on the OpenWrt router.
+  fields:
+    entry_id:
+      description: The config entry ID of the router.
+      example: 1234567890abcdef1234567890abcdef
+      required: true
+      selector:
+        config_entry:
+          integration: openwrt
+    command:
+      description: The command to execute.
+      example: "cat /proc/cpuinfo"
+      required: true
+      selector:
+        text: {}
+
+manage_service:
+  description: Manage an init.d service on the OpenWrt router.
+  fields:
+    entry_id:
+      description: The config entry ID of the router.
+      example: 1234567890abcdef1234567890abcdef
+      required: true
+      selector:
+        config_entry:
+          integration: openwrt
+    service_name:
+      description: The name of the service (e.g., dnsmasq).
+      example: "dnsmasq"
+      required: true
+      selector:
+        text: {}
+    action:
+      description: The action to perform (start, stop, restart, enable, disable).
+      example: "restart"
+      required: true
+      selector:
+        select:
+          options:
+            - "start"
+            - "stop"
+            - "restart"
+            - "enable"
+            - "disable"
+
+wake_on_lan:
+  description: Sends a Wake on LAN magic packet to a device via the OpenWrt router.
+  fields:
+    target:
+      description: The config entry ID of the OpenWrt router.
+      example: 1234567890abcdef1234567890abcdef
+      required: true
+      selector:
+        config_entry:
+          integration: openwrt
+    mac:
+      description: The MAC address of the device to wake up.
+      example: "AA:BB:CC:DD:EE:FF"
+      required: true
+      selector:
+        text: {}
+    interface:
+      description: Optional interface to send the packet through (e.g. br-lan).
+      example: "br-lan"
+      required: false
+      selector:
+        text: {}
+
+uci_get:
+  name: "Get UCI Value"
+  description: Retrieve a UCI configuration value and return it as a service response.
+  fields:
+    entry_id:
+      description: The config entry ID of the OpenWrt router.
+      example: 1234567890abcdef1234567890abcdef
+      required: true
+      selector:
+        config_entry:
+          integration: openwrt
+    config:
+      description: The UCI config name (e.g. firewall, wireless).
+      example: "firewall"
+      required: true
+      selector:
+        text: {}
+    section:
+      description: The UCI section name.
+      example: "lan"
+      required: false
+      selector:
+        text: {}
+    option:
+      description: The UCI option name.
+      example: "ipaddr"
+      required: false
+      selector:
+        text: {}
+
+uci_set:
+  name: "Set UCI Value"
+  description: Set a UCI configuration value and commit the changes.
+  fields:
+    entry_id:
+      description: The config entry ID of the OpenWrt router.
+      example: 1234567890abcdef1234567890abcdef
+      required: true
+      selector:
+        config_entry:
+          integration: openwrt
+    config:
+      description: The UCI config name.
+      example: "firewall"
+      required: true
+      selector:
+        text: {}
+    section:
+      description: The UCI section name.
+      example: "@rule[0]"
+      required: true
+      selector:
+        text: {}
+    option:
+      description: The UCI option name.
+      example: "enabled"
+      required: false
+      selector:
+        text: {}
+    value:
+      description: The value to set.
+      example: "1"
+      required: true
+      selector:
+        text: {}
+
+create_backup:
+  description: Creates a configuration backup on the OpenWrt router using sysupgrade.
+  fields:
+    entry_id:
+      description: The config entry ID of the OpenWrt router.
+      example: 1234567890abcdef1234567890abcdef
+      required: true
+      selector:
+        config_entry:
+          integration: openwrt

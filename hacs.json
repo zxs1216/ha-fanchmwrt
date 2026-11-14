@@ -1,0 +1,7 @@
+{
+  "name": "FanchmWrt",
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "fanchmwrt.zip",
+  "homeassistant": "2025.2.0"
+}
