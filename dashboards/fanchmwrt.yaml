@@ -3,9 +3,8 @@
 # HA 核心不支持「实体级」确认弹窗：在设备页直接点按钮/开关不会弹窗。
 # 本仪表盘把控制项放到带 confirmation 的卡片里，满足计划书「控制块点击必须弹出再确认窗」。
 #
-# 用法：把下面的 REPLACE_xxx 替换为 HA 中实际生成的 entity_id
-#（开发者工具 → 状态，搜索「重启路由器」「刷新 DNS 缓存」「节点」即可找到）。
-# v4 部署完成后，安装脚本/助手也可以直接把这份视图写入 HA 仪表盘。
+# 下方 entity_id 取自 192.168.5.2 的本次安装；换设备后按实际 ID 调整。
+# 已同步写入 HA 侧边栏仪表盘「FanchmWrt 控制」(fanchmwrt-control)。
 
 title: FanchmWrt 控制
 views:
@@ -19,7 +18,7 @@ views:
           以下操作均需二次确认，避免误触导致断网。
 
       - type: button
-        entity: button.REPLACE_reboot_router
+        entity: button.reboot_router_jcg_q30_pro
         name: 重启路由器
         icon: mdi:restart
         icon_height: 48px
@@ -27,42 +26,42 @@ views:
           action: perform-action
           perform_action: button.press
           target:
-            entity_id: button.REPLACE_reboot_router
+            entity_id: button.reboot_router_jcg_q30_pro
           confirmation:
             text: 确认重启路由器？会短暂断网。
 
       - type: button
-        entity: button.REPLACE_oc_flush_dns
+        entity: button.shua_xin_dns_huan_cun_openclash
         name: 刷新 DNS 缓存
         icon: mdi:refresh
         tap_action:
           action: perform-action
           perform_action: button.press
           target:
-            entity_id: button.REPLACE_oc_flush_dns
+            entity_id: button.shua_xin_dns_huan_cun_openclash
           confirmation:
             text: 确认清空 OpenClash 的 Fake-IP / DNS 缓存？
 
       - type: entities
         title: 分流组节点
         entities:
-          - entity: select.REPLACE_oc_group_node_select
+          - entity: select.jie_dian_xuan_ze_jie_dian_openclash
             name: 🚀 节点选择
-          - entity: select.REPLACE_oc_group_gemini
+          - entity: select.gemini_jie_dian_openclash
             name: 🎯 Gemini
-          - entity: select.REPLACE_oc_group_tiktok
+          - entity: select.tiktok_jie_dian_openclash
             name: 🎯 TikTok
-          - entity: select.REPLACE_oc_group_discord
+          - entity: select.discord_jie_dian_openclash
             name: 🎯 Discord
-          - entity: select.REPLACE_oc_group_x
+          - entity: select.x_jie_dian_openclash
             name: 🎯 X
 
       - type: entities
         title: 运行状态与流量
         entities:
-          - entity: sensor.REPLACE_oc_current_node
-          - entity: sensor.REPLACE_oc_proxy_total
-          - entity: sensor.REPLACE_oc_up_rate
-          - entity: sensor.REPLACE_oc_down_rate
-          - entity: binary_sensor.REPLACE_oc_dns_healthy
-          - entity: binary_sensor.REPLACE_diag_internet
+          - entity: sensor.dang_qian_jie_dian_openclash
+          - entity: sensor.dai_li_lei_ji_liu_liang_openclash
+          - entity: sensor.shi_shi_shang_chuan_openclash
+          - entity: sensor.shi_shi_xia_zai_openclash
+          - entity: binary_sensor.dns_jie_xi_jian_kang_openclash
+          - entity: binary_sensor.wai_wang_lian_tong_jcg_q30_pro
