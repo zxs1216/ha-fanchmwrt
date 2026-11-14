@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, call, patch
 
 import pytest
-
 from custom_components.openwrt.api.ubus import UbusClient
 from custom_components.openwrt.const import DOMAIN
 from custom_components.openwrt.coordinator import OpenWrtDataCoordinator

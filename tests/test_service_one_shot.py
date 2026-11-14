@@ -14,7 +14,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from custom_components.openwrt.api.base import ServiceInfo, classify_service
 
 # --- Real payloads from `ubus call rc list` -------------------------------
@@ -216,9 +215,8 @@ def test_malformed_instances_do_not_raise(bad: dict) -> None:
 @pytest.mark.asyncio
 async def test_failed_manage_service_raises_and_does_not_update() -> None:
     """A rejected command must not leave the switch showing the new state."""
-    from homeassistant.exceptions import HomeAssistantError
-
     from custom_components.openwrt.switch import OpenWrtServiceSwitch
+    from homeassistant.exceptions import HomeAssistantError
 
     coordinator = MagicMock()
     coordinator.data.services = [
@@ -247,9 +245,8 @@ async def test_failed_manage_service_raises_and_does_not_update() -> None:
 @pytest.mark.asyncio
 async def test_failed_start_after_successful_enable_raises() -> None:
     """If enable succeeds but start fails, state must not be published."""
-    from homeassistant.exceptions import HomeAssistantError
-
     from custom_components.openwrt.switch import OpenWrtServiceSwitch
+    from homeassistant.exceptions import HomeAssistantError
 
     coordinator = MagicMock()
     coordinator.data.services = [

@@ -3,14 +3,13 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.helpers import device_registry as dr
-
 from custom_components.openwrt.api.base import (
     DeviceInfo,
     NetworkInterface,
     OpenWrtData,
 )
 from custom_components.openwrt.coordinator import OpenWrtDataCoordinator
+from homeassistant.helpers import device_registry as dr
 
 
 @pytest.mark.asyncio

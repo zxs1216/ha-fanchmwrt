@@ -5,10 +5,9 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
-from homeassistant.helpers import device_registry as dr
-
 from custom_components.openwrt.api.base import OpenWrtData
 from custom_components.openwrt.coordinator import OpenWrtDataCoordinator
+from homeassistant.helpers import device_registry as dr
 
 ROUTER_MAC = "00:00:5e:00:53:04"
 GATEWAY_MAC = "00:00:5e:00:53:01"

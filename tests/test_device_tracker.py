@@ -7,12 +7,6 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from homeassistant.components.device_tracker import SourceType
-from homeassistant.const import CONF_HOST
-from homeassistant.helpers import (
-    device_registry as dr,
-)
-
 from custom_components.openwrt.api.base import (
     ConnectedDevice,
     OpenWrtData,
@@ -23,6 +17,11 @@ from custom_components.openwrt.const import (
     CONF_TRUST_STALE_ARP,
 )
 from custom_components.openwrt.device_tracker import OpenWrtDeviceTracker
+from homeassistant.components.device_tracker import SourceType
+from homeassistant.const import CONF_HOST
+from homeassistant.helpers import (
+    device_registry as dr,
+)
 
 
 @pytest.fixture

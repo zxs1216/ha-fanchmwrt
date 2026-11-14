@@ -3,8 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from homeassistant.const import CONF_HOST
-
 from custom_components.openwrt.api.base import (
     OpenWrtData,
     OpenWrtPermissions,
@@ -14,6 +12,7 @@ from custom_components.openwrt.number import (
     OpenWrtTxPowerNumber,
     async_setup_entry,
 )
+from homeassistant.const import CONF_HOST
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,6 @@
 """Tests for MAC vendor information helper."""
 
 import pytest
-
 from custom_components.openwrt.helpers.mac_vendor import get_mac_vendor_info
 
 

@@ -3,14 +3,13 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from homeassistant.components.update import UpdateEntityFeature
-
 from custom_components.openwrt.api.base import OpenWrtData
 from custom_components.openwrt.const import DATA_CLIENT, DATA_COORDINATOR, DOMAIN
 from custom_components.openwrt.update import (
     OpenWrtPackageUpdateEntity,
     async_setup_entry,
 )
+from homeassistant.components.update import UpdateEntityFeature
 
 
 @pytest.mark.asyncio

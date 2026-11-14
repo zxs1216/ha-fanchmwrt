@@ -5,11 +5,10 @@ from __future__ import annotations
 from unittest.mock import MagicMock
 
 import pytest
-from homeassistant.components.sensor import SensorDeviceClass
-
 from custom_components.openwrt.api.base import MwanStatus, OpenWrtData
 from custom_components.openwrt.sensor import _create_mwan_sensors
 from custom_components.openwrt.sensors.base import OpenWrtSensorEntity
+from homeassistant.components.sensor import SensorDeviceClass
 
 
 def _status_sensor(data: OpenWrtData, iface: str) -> OpenWrtSensorEntity:

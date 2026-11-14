@@ -3,8 +3,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-from homeassistant.const import CONF_HOST
-
 from custom_components.openwrt.api.base import OpenWrtData, SqmStatus
 from custom_components.openwrt.number import (
     OpenWrtSqmDownloadNumber,
@@ -12,6 +10,7 @@ from custom_components.openwrt.number import (
 )
 from custom_components.openwrt.sensor import _create_sqm_sensors
 from custom_components.openwrt.switch import OpenWrtSqmSwitch
+from homeassistant.const import CONF_HOST
 
 
 def test_sqm_status_model() -> None:

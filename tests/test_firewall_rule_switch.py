@@ -3,10 +3,9 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from homeassistant.exceptions import HomeAssistantError
-
 from custom_components.openwrt.api.base import FirewallRule, OpenWrtData
 from custom_components.openwrt.switch import OpenWrtFirewallRuleSwitch
+from homeassistant.exceptions import HomeAssistantError
 
 
 @pytest.mark.asyncio
