@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.0.1 — 补齐 HACS 合规资源
+
+### 新增
+
+- 添加 `custom_components/fanchmwrt/brand/icon.png`（256×256）
+
+### 修复
+
+- HACS 发布规范要求集成必须提供品牌图标资源，缺失会导致仓库被判为不合规、无法在 HACS 内安装
+
 ## v3.0.0 — 品牌重构与平台裁剪
 
 > 定位：从「上游精简分支」转为自主维护的 FanchmWrt 集成。
