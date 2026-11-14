@@ -299,6 +299,7 @@ class AuthFlowMixin:
     async def _test_connection(self, data: dict[str, Any]) -> str | None:
         """Test connection to the device. Returns error key or None on success."""
         self._diagnostic_report = None
+        client: Any = None
         _LOGGER.debug(
             "Starting connection test with data: %s",
             {k: (v if k != CONF_PASSWORD else "********") for k, v in data.items()},
@@ -329,7 +330,9 @@ class AuthFlowMixin:
                             )
             return self._handle_test_error(err, data.get(CONF_USERNAME))
         finally:
-            await client.disconnect()
+            if client is not None:
+                with contextlib.suppress(Exception):
+                    await client.disconnect()
 
     async def _perform_connection_test(self, client: Any, data: dict[str, Any]) -> None:
         """Perform the actual connection and info gathering."""

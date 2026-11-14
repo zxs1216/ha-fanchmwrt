@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.1.1 — 修复「添加集成」500 错误
+
+**现象**：v3.1.0 点开 FanchmWrt 添加集成时，前端提示
+「无法加载配置向导：500 Internal Server Error Server got itself in trouble」。
+
+**根因**：v3.1.0 把登录改为单步表单时，`flows/discovery.py` 漏导入 7 个常量：
+`CONF_USERNAME`、`CONF_PASSWORD`、`CONF_USE_SSL`、`CONF_VERIFY_SSL`、
+`CONF_PORT`、`CONF_UBUS_PATH`、`DEFAULT_UBUS_PATH`。
+`async_step_user()` / `_quick_setup_schema()` 一执行就抛
+`NameError: name 'CONF_USERNAME' is not defined`，配置流初始化失败 → HTTP 500。
+
+**修复**
+
+- 补齐上述 7 个常量导入；全包 pyflakes（F821）扫描与 `compileall` 均通过，无其它未定义名。
+- `_test_connection()` 预先初始化 `client = None` 并保护 `finally` 中的 `disconnect()`，
+  避免创建客户端即失败时抛 `UnboundLocalError`，导致提交表单时再次 500。
+
+**范围**：仅修复配置向导，未新增或恢复任何实体、设备、选项。
+
 ## v3.1.0 — 旁路由深度精简、单步登录与完整中文
 
 ### 实体精简（旁路由场景）
