@@ -374,6 +374,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+        # v4.0.1：平台注册完成后再兜底清一次，确保没有「已禁用实体」残留
+        late_entities, late_devices = purge_legacy_entities(hass, entry)
+        if late_entities or late_devices:
+            _LOGGER.info(
+                "FanchmWrt v4: purged %s disabled entities after platform setup",
+                late_entities,
+            )
+
         if not hass.services.has_service(DOMAIN, SERVICE_REBOOT):
             register_services(hass)
 

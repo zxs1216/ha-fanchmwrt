@@ -130,7 +130,7 @@
       },
       "provision_failed": {
         "title": "Benutzer-Erstellung fehlgeschlagen",
-        "description": "Die automatische Benutzer-Erstellung ist fehlgeschlagen.\\n\\n**Was kannst du jetzt tun?**\\n- **Berechtigungen prüfen:** Stelle sicher, dass dein aktueller Benutzer `file.exec` Rechte hat.\\n- **Speicherplatz prüfen:** Stelle sicher, dass dein Router genug freien Speicher in `/usr/share/rpcd/` hat.\\n- **SSH versuchen:** SSH ist oft robuster für die Ersteinrichtung, wenn ubus eingeschränkt ist.\\n\\nDu kannst trotzdem mit den aktuellen Zugangsdaten fortfahren, indem du diesen Schritt überspringst."
+        "description": "Die automatische Benutzer-Erstellung ist fehlgeschlagen.\\n\\n**Was kannst du jetzt tun?**\\n- **Berechtigungen prüfen:** Stelle sicher, dass dein aktueller Benutzer `file.exec` Rechte hat.\\n- **Speicherplatz prüfen:** Stelle sicher, dass dein Router genug freien Speicher in `/usr/share/rpcd/` hat.\\n- **SSH versuchen:** SSH ist oft robuster für die Ersteinrichtung, wenn ubus eingeschränkt ist.\\n\\nDu kannst trotzdem mit den aktuellen Zugangsdaten fortfahren, indem du diesen Schritt überspringst. {error} {tip}"
       },
       "diagnostics": {
         "title": "Verbindungs-Diagnose",

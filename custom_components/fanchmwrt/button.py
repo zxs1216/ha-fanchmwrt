@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from .helpers.compact import filter_router_only, router_identifier_set
+from .helpers.compact import (
+    filter_router_only,
+    filter_v4_entities,
+    router_identifier_set,
+)
 
 import logging
 import re
@@ -90,7 +94,9 @@ async def async_setup_entry(
 
         if new_entities:
             async_add_entities(
-                filter_router_only(new_entities, router_identifier_set(entry, coordinator))
+                filter_v4_entities(
+                    filter_router_only(new_entities, router_identifier_set(entry, coordinator))
+                )
             )
 
     # Register listener and run initial discovery

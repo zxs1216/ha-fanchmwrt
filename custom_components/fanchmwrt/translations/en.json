@@ -131,7 +131,7 @@
       },
       "provision_failed": {
         "title": "Provisioning Failed",
-        "description": "The automatic user provisioning failed.\\n\\n**What to do now?**\\n- **Check Permissions:** Ensure your current user has `file.exec` rights.\\n- **Check Space:** Ensure your router has enough free space in `/usr/share/rpcd/`.\\n- **Try SSH:** SSH is often more robust for initial setup if ubus is restricted.\\n\\nYou can still proceed with the current credentials by skipping this step."
+        "description": "The automatic user provisioning failed.\\n\\n**What to do now?**\\n- **Check Permissions:** Ensure your current user has `file.exec` rights.\\n- **Check Space:** Ensure your router has enough free space in `/usr/share/rpcd/`.\\n- **Try SSH:** SSH is often more robust for initial setup if ubus is restricted.\\n\\nYou can still proceed with the current credentials by skipping this step. {error} {tip}"
       },
       "diagnostics": {
         "title": "Connection Diagnostics",

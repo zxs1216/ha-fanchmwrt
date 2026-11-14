@@ -7,6 +7,7 @@ FanchmWrt 部署在旁路由上，不提供无线接入、不做客户端设备�
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -48,6 +49,46 @@ def filter_router_only(entities: list[Any], allowed: set[str]) -> list[Any]:
         }
         if not values or values & allowed:
             result.append(entity)
+    return result
+
+
+# 服务状态 / 服务启停按钮与开关：计划书三大块不需要，从源头不创建。
+V4_SERVICE_ENTITY_PREFIXES: tuple[str, ...] = (
+    "service_",
+    "restart_",
+    "stop_",
+    "start_",
+    "reload_",
+)
+
+
+def filter_v4_entities(entities: list[Any]) -> list[Any]:
+    """v4：清除服务类实体，并把计划书需要的传感器从「默认禁用」改为「默认启用」。
+
+    上游把存储 / 接口速率 / 系统日志 / 进程排行等实体设为
+    entity_registry_enabled_default=False，于是设备页出现
+    「+N 个已禁用实体」。计划书要求这些属于传感器块，因此强制启用；
+    只有成批的服务控制实体被丢弃。
+    """
+    result: list[Any] = []
+    for entity in entities:
+        unique_id = str(getattr(entity, "_attr_unique_id", "") or "").lower()
+        tail = unique_id.split("_", 1)[-1] if "_" in unique_id else unique_id
+        if tail.startswith(V4_SERVICE_ENTITY_PREFIXES):
+            continue
+
+        if getattr(entity, "_attr_entity_registry_enabled_default", True) is False:
+            entity._attr_entity_registry_enabled_default = True
+        description = getattr(entity, "entity_description", None)
+        if description is not None and (
+            getattr(description, "entity_registry_enabled_default", True) is False
+        ):
+            # EntityDescription 是 frozen dataclass，需要绕过冻结赋值
+            with contextlib.suppress(Exception):
+                object.__setattr__(
+                    description, "entity_registry_enabled_default", True
+                )
+        result.append(entity)
     return result
 
 
@@ -142,7 +183,8 @@ def purge_legacy_entities(hass: Any, entry: ConfigEntry) -> tuple[int, int]:
                 pass
 
     removed_devices = 0
-    for device in list(dev_reg.devices.values()):
+    # 使用官方 helper 迭代，避免触发 device_registry.devices 的弃用告警
+    for device in dr.async_entries_for_config_entry(dev_reg, entry.entry_id):
         if any(
             isinstance(item, (tuple, list)) and len(item) > 1 and item[0] == "openwrt"
             for item in device.identifiers

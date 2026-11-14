@@ -6,7 +6,11 @@ All entities are grouped under the router device.
 
 from __future__ import annotations
 
-from .helpers.compact import filter_router_only, router_identifier_set
+from .helpers.compact import (
+    filter_router_only,
+    filter_v4_entities,
+    router_identifier_set,
+)
 
 import logging
 
@@ -207,7 +211,9 @@ async def async_setup_entry(
 
         if new_entities:
             async_add_entities(
-                filter_router_only(new_entities, router_identifier_set(entry, coordinator))
+                filter_v4_entities(
+                    filter_router_only(new_entities, router_identifier_set(entry, coordinator))
+                )
             )
 
     # Initial discovery and listener registration

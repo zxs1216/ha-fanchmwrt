@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from .helpers.compact import filter_router_only, router_identifier_set
+from .helpers.compact import (
+    filter_router_only,
+    filter_v4_entities,
+    router_identifier_set,
+)
 
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -125,7 +129,9 @@ async def async_setup_entry(
 
         if entities:
             async_add_entities(
-                filter_router_only(entities, router_identifier_set(entry, coordinator))
+                filter_v4_entities(
+                    filter_router_only(entities, router_identifier_set(entry, coordinator))
+                )
             )
 
     async def _async_cleanup_entities() -> None:

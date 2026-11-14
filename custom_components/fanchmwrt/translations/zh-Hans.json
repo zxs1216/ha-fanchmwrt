@@ -34,7 +34,7 @@
       },
       "credentials": {
         "title": "身份验证",
-        "description": "输入 **{host}** 的 **{connection_type}** 凭据。\n\n注意：端口留空将使用默认值。",
+        "description": "输入 **{host}** 的 **{connection_type}** 凭据。\n\n注意：端口留空将使用默认值。 {auto_detected_info}",
         "data": {
           "username": "用户名",
           "password": "密码",
@@ -48,7 +48,7 @@
       },
       "ssh": {
         "title": "SSH 身份验证",
-        "description": "输入 {host} 的 SSH 凭据。\n\n注意：端口留空将使用默认值 22。",
+        "description": "输入 {host} 的 SSH 凭据。\n\n注意：端口留空将使用默认值 22。 {security_link}",
         "data": {
           "username": "用户名",
           "password": "密码",
@@ -68,7 +68,7 @@
       },
       "confirm_discovery": {
         "title": "已发现路由器",
-        "description": "是否设置 {name}（{host}）？将通过 **{method}** 建立连接。\n\n将自动检测可用功能。",
+        "description": "是否设置 {name}（{host}）？将通过 **{method}** 建立连接。\n\n将自动检测可用功能。 {capabilities}",
         "data": {
           "username": "用户名",
           "password": "密码",
@@ -94,7 +94,7 @@
       },
       "packages": {
         "title": "软件包摘要与功能选择",
-        "description": "在路由器上检测到以下可选软件包。缺少的软件包可能导致部分功能不可用。",
+        "description": "在路由器上检测到以下可选软件包。缺少的软件包可能导致部分功能不可用。 {packages_table}",
         "data": {
           "track_devices": "启用设备跟踪",
           "enable_load": "启用系统负载监控",
@@ -110,7 +110,7 @@
       },
       "provision_user": {
         "title": "安全用户配置",
-        "description": "你当前以 **root** 身份连接。出于安全考虑，强烈建议创建一个权限受限的专用用户。",
+        "description": "你当前以 **root** 身份连接。出于安全考虑，强烈建议创建一个权限受限的专用用户。 {security_link} {user_exists_info}",
         "data": {
           "mode": "你想如何继续？"
         }
@@ -135,7 +135,7 @@
       },
       "diagnostics": {
         "title": "连接诊断",
-        "description": "已执行连接测试并发现以下问题。请查看报告：\n\n{diagnostics_report}",
+        "description": "已执行连接测试并发现以下问题。请查看报告： {footer_intro} {footer_link_text} {footer_title} {issues_url} {report}",
         "data": {
           "run_repair": "尝试通过 SSH 自动修复（启动服务 / 安装缺失软件包）"
         }
@@ -259,7 +259,7 @@
       },
       "options_packages": {
         "title": "软件包摘要",
-        "description": "在路由器上检测到以下可选软件包。缺少的软件包可能导致部分功能不可用。",
+        "description": "在路由器上检测到以下可选软件包。缺少的软件包可能导致部分功能不可用。 {packages_table}",
         "data": {
           "track_devices": "启用设备跟踪",
           "enable_load": "启用系统负载监控",
@@ -899,11 +899,11 @@
     },
     "missing_packages": {
       "title": "{host} 缺少推荐软件包",
-      "description": "要使用 FanchmWrt 集成的全部功能，{host} 上还缺少一些软件包。"
+      "description": "要使用 FanchmWrt 集成的全部功能，{host} 上还缺少一些软件包。 {packages}"
     },
     "firmware_outdated": {
       "title": "{host} 的路由器固件已过时",
-      "description": "FanchmWrt 路由器 {host} 当前运行 {current_version} 版本，最新版本为 {latest_version}。"
+      "description": "FanchmWrt 路由器 {host} 当前运行 {current_version} 版本，最新版本为 {latest_version}。 {release_url}"
     },
     "stale_permissions": {
       "title": "{username} 在 {host} 上的权限已失效",
@@ -935,7 +935,7 @@
         "step": {
           "init": {
             "title": "恢复权限",
-            "description": "检测到 **{host}** 上发生了固件升级。这类升级通常会重置自定义 RPC ACL 规则。"
+            "description": "检测到 **{host}** 上发生了固件升级。这类升级通常会重置自定义 RPC ACL 规则。 {username}"
           },
           "root_login": {
             "title": "以 Root 登录",
