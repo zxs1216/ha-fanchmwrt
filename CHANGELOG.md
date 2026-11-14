@@ -1,5 +1,39 @@
 # Changelog
 
+## v4.0.0 — 按计划书大版本更新：两个主条目 + 彻底清理禁用实体
+
+**版本定位**：从「单设备精简版」升级为计划书定义的双主条目结构，完全剥离上游更新链。
+
+### 新增：两个主条目
+
+| 主条目 | 分区 | 内容 | 左侧「访问」 |
+|---|---|---|---|
+| 路由器（FanchmWrt） | 控制 | 重启路由器 | LuCI 状态概览 `/cgi-bin/luci/admin/status/overview` |
+| | 传感器 | 系统 / 内存 / 存储 / **运行时间（d.h.m）** / 流量 / 在线客户端 | |
+| | 诊断 | 外网连通、网关延迟、DNS 解析耗时、原有系统诊断项 | |
+| OpenClash | 代理 | 5 个分流组节点选择（🚀 节点选择 / 🎯 Gemini / TikTok / Discord / X）、刷新 DNS 缓存 | metacubexd 代理面板 `:9090/ui/metacubexd/` |
+| | 运行状态 | 当前节点、OpenClash 运行、DNS 解析健康、活动连接数、规则数、内核版本、代理模式 | |
+| | 流量 | 实时上/下行、累计上/下行、**代理累计流量**、DNS 解析延迟 | |
+
+- 数据源：新增 `openclash/api.py`（mihomo RESTful，`/proxies`、`/traffic` SSE 首行、`/connections`、`/rules`、`/configs`、`/version`、节点切换、Fake-IP 缓存刷新）与 `openclash/coordinator.py`（15 秒轮询，失败仅降级不阻断集成加载）。
+- DNS 解析健康 / 外网连通 / 网关延迟由标准库 UDP/TCP 探测实现，无新增 pip 依赖。
+- 「主要设置」新增 OpenClash API 密钥与端口（中文），密钥写入 HA 配置后可自动生成带密钥的面板直达链接。
+
+### 修复：历史禁用实体
+
+- 新增 `purge_legacy_entities()`：启动时删除旧 `openwrt` 集成残留的全部实体（含 `config_entry` / `user` 禁用项）、本条目下任何被禁用的实体，以及旧 `openwrt` 域设备。设备页不再出现「+N 个已禁用实体」。
+- 本次上线前已直接清理 HA 上残留的旧 `openwrt` 条目及其 33 个禁用实体。
+
+### 变更
+
+- 运行时间由 TIMESTAMP 改为 `Xd Yh Zm` 字符串，归入传感器块。
+- `PLATFORMS` 增加 `select`；`router_identifier_set()` 同时放行 OpenClash 设备，避免被辅助设备清理逻辑误删。
+- 版本 `3.1.1` → `4.0.0`。
+
+### 已知限制
+
+- HA 设备页的按钮/开关**不会**弹出二次确认（核心不支持实体级确认）。控制项的确认弹窗在随包 `dashboards/fanchmwrt.yaml` 中实现，导入后从仪表盘操作即可。
+
 ## v3.1.1 — 修复「添加集成」500 错误
 
 **现象**：v3.1.0 点开 FanchmWrt 添加集成时，前端提示

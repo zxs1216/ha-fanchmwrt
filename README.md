@@ -2,7 +2,7 @@
 
 自用的 Home Assistant OpenWrt 集成，聚焦软路由（旁路由）监控。由 [FaserF/ha-openwrt](https://github.com/FaserF/ha-openwrt) 裁剪重构而来，按 MIT 协议保留原始版权。
 
-- **当前版本**：3.0.0
+- **当前版本**：4.0.0
 - **domain**：`fanchmwrt`
 - **最低 HA 版本**：2025.2.0
 
@@ -39,9 +39,19 @@
 
 继承并合并了上一版 `ha-openwrt-minimal` 的简体中文翻译，目前覆盖 `strings.json` 中 95/507 个键（约 19%），未覆盖部分由 HA 自动回退英文。完整翻译排在 v3.1。
 
+## v4.0.0 两个主条目
+
+| 主条目 | 控制 | 传感器 | 诊断 | 「访问」 |
+|---|---|---|---|---|
+| 路由器 | 重启 | 系统 / 内存 / 存储 / 运行时间（d.h.m）/ 流量 / 在线客户端 | 外网连通、网关延迟、DNS 解析耗时 | LuCI 状态概览 |
+| OpenClash | 5 个分流组节点选择、刷新 DNS 缓存 | 当前节点、实时与累计流量、代理累计流量、活动连接数 | 运行状态、DNS 解析健康、规则数、内核版本、代理模式 | metacubexd 代理面板 |
+
+- OpenClash 数据来自路由器 mihomo API（默认 `9090`），在「主要设置」里填 API 密钥与端口。
+- 启动时自动清除旧 `openwrt` 集成与历史精简留下的**全部禁用实体**，设备页不再出现「+N 个已禁用实体」。
+- 控制项的二次确认弹窗见 `dashboards/fanchmwrt.yaml`；HA 设备页原生按钮不会弹窗。
+
 ## 尚未包含
 
-- **OpenClash 独立设备条目**：v3.1 实现（分流组节点选择、运行状态、实时与累计流量、fake-ip 缓存刷新）
 - **深度模块清理**：VPN / SQM / Batman / GPS / ModemManager 等内部代码仍保留但界面不暴露，避免在无可运行 HA 环境下删出 ImportError
 
 ## 安装
@@ -54,7 +64,7 @@
 
 ### 方式二：手动
 
-下载 Release 中的 `fanchmwrt.zip`，解压后把 `custom_components/fanchmwrt` 放入 HA 配置目录，重启。
+下载 Release 的源码包，把其中的 `custom_components/fanchmwrt` 整个目录放入 HA 配置目录，重启。
 
 ## 路由器侧准备
 

@@ -231,7 +231,9 @@
           "enable_services": "服务开关",
           "enable_firewall": "防火墙开关",
           "enable_vpn": "VPN 传感器",
-          "enable_load": "负载传感器"
+          "enable_load": "负载传感器",
+          "mihomo_secret": "OpenClash API 密钥",
+          "mihomo_port": "OpenClash API 端口"
         }
       },
       "options_permissions": {

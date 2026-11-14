@@ -32,6 +32,14 @@ from .base import (
 _LOGGER = logging.getLogger(__name__)
 
 
+def _format_uptime_dhm(seconds: int) -> str:
+    """把运行时间格式化为 d.h.m 形式（计划书要求）。"""
+    days, remainder = divmod(int(seconds or 0), 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes = remainder // 60
+    return f"{days}d {hours}h {minutes}m"
+
+
 class OpenWrtTemperatureSensor(CoordinatorEntity[OpenWrtDataCoordinator], SensorEntity):
     """Temperature sensor for extra thermal zones."""
 
@@ -170,11 +178,10 @@ def _get_system_sensors() -> tuple[OpenWrtSensorDescription, ...]:
         ),
         OpenWrtSensorDescription(
             key="uptime",
-            name="Uptime",
+            name="运行时间",
             translation_key="uptime",
-            device_class=SensorDeviceClass.TIMESTAMP,
-            entity_category=EntityCategory.DIAGNOSTIC,
-            value_fn=lambda data: data.boot_time,
+            icon="mdi:clock-outline",
+            value_fn=lambda data: _format_uptime_dhm(data.system_resources.uptime),
             attrs_fn=lambda data: {
                 "days": data.system_resources.uptime // 86400,
                 "hours": (data.system_resources.uptime % 86400) // 3600,

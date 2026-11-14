@@ -28,6 +28,8 @@ from ..const import (
     CONF_GPS_MODEM_PORT,
     CONF_GPS_POLL_INTERVAL,
     CONF_MANUAL_TRACKED_DEVICES,
+    CONF_MIHOMO_PORT,
+    CONF_MIHOMO_SECRET,
     CONF_MQTT_PRESENCE,
     CONF_REDEPLOY_MQTT,
     CONF_REDEPLOY_USER,
@@ -49,6 +51,7 @@ from ..const import (
     DEFAULT_GPS_MODEM_ENABLED,
     DEFAULT_GPS_MODEM_PORT,
     DEFAULT_GPS_POLL_INTERVAL,
+    DEFAULT_MIHOMO_PORT,
     DEFAULT_REVERSE_DNS,
     DEFAULT_SKIP_RANDOM_MAC,
     DEFAULT_TRACK_WIRED,
@@ -133,6 +136,15 @@ class OpenWrtOptionsFlow(OptionsPackagesFlowMixin, OptionsMqttFlowMixin, Options
                 CONF_ENABLE_LOAD,
                 default=current.get(CONF_ENABLE_LOAD, True),
             ): bool,
+            # v4：OpenClash 主条目所需的 mihomo API
+            vol.Optional(
+                CONF_MIHOMO_SECRET,
+                default=current.get(CONF_MIHOMO_SECRET, ""),
+            ): str,
+            vol.Optional(
+                CONF_MIHOMO_PORT,
+                default=current.get(CONF_MIHOMO_PORT, DEFAULT_MIHOMO_PORT),
+            ): vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
         }
 
         schema = vol.Schema(schema_dict)

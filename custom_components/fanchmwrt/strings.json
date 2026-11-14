@@ -231,7 +231,9 @@
           "enable_services": "Service switches",
           "enable_firewall": "Firewall switches",
           "enable_vpn": "VPN sensors",
-          "enable_load": "Load sensors"
+          "enable_load": "Load sensors",
+          "mihomo_secret": "OpenClash API Secret",
+          "mihomo_port": "OpenClash API Port"
         }
       },
       "options_permissions": {

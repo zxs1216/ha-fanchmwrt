@@ -14,11 +14,13 @@ from homeassistant.helpers import device_registry as dr
 
 
 def router_identifier_set(entry: ConfigEntry, coordinator: Any) -> set[str]:
-    """返回路由器主设备在 device registry 中使用的全部标识符（小写）。"""
+    """返回 v4 允许保留的设备标识符（路由器主设备 + OpenClash 主设备）。"""
+    host = entry.data.get("host")
     candidates = (
         getattr(coordinator, "router_id", None),
         entry.unique_id,
-        entry.data.get("host"),
+        host,
+        f"{host}_openclash" if host else None,
     )
     return {str(value).lower() for value in candidates if value}
 
@@ -113,3 +115,44 @@ def purge_removed_entities(hass: Any, entry: ConfigEntry) -> int:
             registry.async_remove(entity.entity_id)
             removed += 1
     return removed
+
+
+def purge_legacy_entities(hass: Any, entry: ConfigEntry) -> tuple[int, int]:
+    """v4 一次性迁移：彻底清除旧集成与历史版本留下的禁用实体。
+
+    返回 (删除的实体数, 删除的设备数)。三类目标：
+    1. platform=openwrt 的全部实体（旧 ha-openwrt 集成残留，含 config_entry/user 禁用项）
+    2. 本条目下任何被禁用的实体（历次精简后残留的「已禁用实体」）
+    3. identifiers 属于旧 openwrt 域的设备（连同其实体）
+    """
+    from homeassistant.helpers import entity_registry as er  # noqa: PLC0415
+
+    ent_reg = er.async_get(hass)
+    dev_reg = dr.async_get(hass)
+    removed_entities = 0
+
+    for entity in list(ent_reg.entities.values()):
+        if entity.platform == "openwrt" or (
+            entity.config_entry_id == entry.entry_id and entity.disabled_by is not None
+        ):
+            try:
+                ent_reg.async_remove(entity.entity_id)
+                removed_entities += 1
+            except (KeyError, ValueError):
+                pass
+
+    removed_devices = 0
+    for device in list(dev_reg.devices.values()):
+        if any(
+            isinstance(item, (tuple, list)) and len(item) > 1 and item[0] == "openwrt"
+            for item in device.identifiers
+        ):
+            # 旧设备可能仍挂着本条目新实体，只在没有实体时删除
+            if not er.async_entries_for_device(ent_reg, device.id, include_disabled_entities=True):
+                try:
+                    dev_reg.async_remove_device(device.id)
+                    removed_devices += 1
+                except (KeyError, ValueError):
+                    pass
+
+    return removed_entities, removed_devices

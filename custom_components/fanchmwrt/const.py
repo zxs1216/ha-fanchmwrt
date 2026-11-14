@@ -56,6 +56,11 @@ CONF_ENABLE_LOAD: Final = "enable_load"
 CONF_ENABLE_NLBWMON_SENSORS: Final = "enable_nlbwmon_sensors"
 CONF_ENABLE_SNORT_SENSORS: Final = "enable_snort_sensors"
 
+# v4: OpenClash / mihomo External Controller
+CONF_MIHOMO_SECRET: Final = "mihomo_secret"
+CONF_MIHOMO_PORT: Final = "mihomo_port"
+DEFAULT_MIHOMO_PORT: Final = 9090
+
 CONNECTION_TYPE_UBUS: Final = "ubus"
 CONNECTION_TYPE_LUCI_RPC: Final = "luci_rpc"
 CONNECTION_TYPE_SSH: Final = "ssh"
@@ -94,12 +99,14 @@ CONF_DHCP_SOFTWARE: Final = "dhcp_software"
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
+    Platform.SELECT,
     Platform.SENSOR,
     Platform.SWITCH,
 ]
 
 DATA_COORDINATOR: Final = "coordinator"
 DATA_CLIENT: Final = "client"
+DATA_OPENCLASH: Final = "openclash"
 
 ATTR_MANUFACTURER: Final = "OpenWrt"
 ATTR_MODEL: Final = "Router"

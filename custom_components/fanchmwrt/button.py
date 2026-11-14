@@ -40,10 +40,12 @@ from .buttons import (
 from .const import (
     DATA_CLIENT,
     DATA_COORDINATOR,
+    DATA_OPENCLASH,
     DOMAIN,
 )
 from .coordinator import OpenWrtDataCoordinator
 from .helpers import get_via_device_id, is_random_mac, resolve_client_name
+from .openclash import OpenClashCoordinator, openclash_buttons
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +60,12 @@ async def async_setup_entry(
         DATA_COORDINATOR
     ]
     client: OpenWrtClient = hass.data[DOMAIN][entry.entry_id][DATA_CLIENT]
+    openclash: OpenClashCoordinator = hass.data[DOMAIN][entry.entry_id][
+        DATA_OPENCLASH
+    ]
+
+    # v4: OpenClash 控制块（刷新 DNS 缓存）
+    async_add_entities(openclash_buttons(openclash, entry))
 
     tracked_keys: set[str] = set()
 

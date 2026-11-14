@@ -25,9 +25,16 @@ from .const import (
     CONF_ENABLE_SERVICES,
     CONF_ENABLE_VPN,
     DATA_COORDINATOR,
+    DATA_OPENCLASH,
     DOMAIN,
 )
 from .coordinator import OpenWrtDataCoordinator
+from .openclash import (
+    FanchmWrtOpenClashBinarySensor,
+    OpenClashCoordinator,
+    build_router_diagnostics,
+    openclash_binary_sensors,
+)
 from .sensors.tailscale import find_tailscale_peer, tailscale_entities_enabled
 
 
@@ -69,6 +76,20 @@ async def async_setup_entry(
     coordinator: OpenWrtDataCoordinator = hass.data[DOMAIN][entry.entry_id][
         DATA_COORDINATOR
     ]
+    openclash: OpenClashCoordinator = hass.data[DOMAIN][entry.entry_id][
+        DATA_OPENCLASH
+    ]
+
+    # v4: OpenClash 运行状态 / DNS 健康 + Router 诊断块的外网连通
+    v4_binary: list[BinarySensorEntity] = list(
+        openclash_binary_sensors(openclash, entry)
+    )
+    v4_binary.extend(
+        entity
+        for entity in build_router_diagnostics(openclash, entry)
+        if isinstance(entity, FanchmWrtOpenClashBinarySensor)
+    )
+    async_add_entities(v4_binary)
 
     tracked_keys: set[str] = set()
 

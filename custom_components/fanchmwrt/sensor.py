@@ -27,6 +27,7 @@ from .const import (
     CONF_TRACK_DEVICES,
     CONF_TRACK_WIRED,
     DATA_COORDINATOR,
+    DATA_OPENCLASH,
     DEFAULT_SKIP_RANDOM_MAC,
     DEFAULT_TRACK_DEVICES,
     DEFAULT_TRACK_WIRED,
@@ -34,6 +35,12 @@ from .const import (
 )
 from .coordinator import OpenWrtDataCoordinator
 from .helpers import is_random_mac
+from .openclash import (
+    FanchmWrtOpenClashSensor,
+    OpenClashCoordinator,
+    build_router_diagnostics,
+    openclash_sensors,
+)
 from .sensors import (
     OpenWrtDeviceSensor,
     OpenWrtMwanMetricSensor,
@@ -147,6 +154,18 @@ async def async_setup_entry(
     coordinator: OpenWrtDataCoordinator = hass.data[DOMAIN][entry.entry_id][
         DATA_COORDINATOR
     ]
+    openclash: OpenClashCoordinator = hass.data[DOMAIN][entry.entry_id][
+        DATA_OPENCLASH
+    ]
+
+    # v4: OpenClash 条目的运行状态 / 流量传感器 + Router 条目的诊断数值
+    v4_sensors: list[SensorEntity] = list(openclash_sensors(openclash, entry))
+    v4_sensors.extend(
+        entity
+        for entity in build_router_diagnostics(openclash, entry)
+        if isinstance(entity, FanchmWrtOpenClashSensor)
+    )
+    async_add_entities(v4_sensors)
 
     tracked_keys: set[str] = set()
 

@@ -33,17 +33,21 @@ from .api.ssh import SshAuthError, SshError
 from .api.ubus import UbusAuthError, UbusError
 from .helpers.compact import (
     purge_aux_devices,
+    purge_legacy_entities,
     purge_removed_entities,
     router_identifier_set,
 )
 from .const import (
+    CONF_MIHOMO_SECRET,
     DATA_CLIENT,
     DATA_COORDINATOR,
+    DATA_OPENCLASH,
     DOMAIN,
     PLATFORMS,
     SERVICE_REBOOT,
 )
 from .coordinator import OpenWrtDataCoordinator, create_client
+from .openclash import OpenClashCoordinator, openclash_device_id
 from .services import register_services
 
 _register_services = register_services
@@ -262,6 +266,37 @@ async def _async_cleanup_disabled_features(
                 dev_reg.async_remove_device(dev.id)
 
 
+def _async_register_v4_devices(
+    hass: HomeAssistant, entry: ConfigEntry, openclash: OpenClashCoordinator
+) -> None:
+    """注册计划书要求的两个主条目，并挂上各自的「访问」链接。"""
+    dev_reg = dr.async_get(hass)
+    host = str(entry.data.get(CONF_HOST, ""))
+    router_ident = str(entry.unique_id or host)
+
+    for device in dr.async_entries_for_config_entry(dev_reg, entry.entry_id):
+        if (DOMAIN, router_ident) in device.identifiers:
+            dev_reg.async_update_device(
+                device.id,
+                configuration_url=f"http://{host}/cgi-bin/luci/admin/status/overview",
+            )
+            break
+
+    panel = f"http://{host}:{openclash.port}/ui/metacubexd/"
+    secret = str(entry.options.get(CONF_MIHOMO_SECRET, "") or "")
+    if secret:
+        panel += f"#/?hostname={host}&port={openclash.port}&secret={secret}"
+
+    dev_reg.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, openclash_device_id(entry))},
+        name="OpenClash",
+        manufacturer="FanchmWrt",
+        model="Mihomo / OpenClash",
+        configuration_url=panel,
+    )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up from a config entry."""
     client = create_client(hass, {**entry.data, **entry.options})
@@ -280,6 +315,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         # Initialize coordinator data which also handles device registry updates
         await coordinator.async_config_entry_first_refresh()
+
+        # v4: OpenClash 独立数据源，失败时只降级（不阻断集成加载）
+        openclash = OpenClashCoordinator(hass, entry)
+        await openclash.async_refresh()
 
         # Clear any stale unit_of_measurement overrides from previous versions
         _async_migrate_entity_units(hass, entry)
@@ -301,10 +340,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 "FanchmWrt: removed %s obsolete entities", removed_entities
             )
 
+        # v4: 清除旧 openwrt 集成与历史精简留下的全部禁用实体 / 设备
+        legacy_entities, legacy_devices = purge_legacy_entities(hass, entry)
+        if legacy_entities or legacy_devices:
+            _LOGGER.info(
+                "FanchmWrt v4: purged %s legacy entities and %s legacy devices",
+                legacy_entities,
+                legacy_devices,
+            )
+
+        # v4: 两个主条目（路由器 / OpenClash）各自的「访问」链接
+        _async_register_v4_devices(hass, entry, openclash)
+
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN][entry.entry_id] = {
             DATA_COORDINATOR: coordinator,
             DATA_CLIENT: client,
+            DATA_OPENCLASH: openclash,
         }
 
         # Pre-import platforms in the background to avoid blocking the event loop
