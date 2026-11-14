@@ -4,7 +4,6 @@ from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from custom_components.openwrt.coordinator import OpenWrtDataCoordinator
 
 

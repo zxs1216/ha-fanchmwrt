@@ -91,9 +91,8 @@ async def test_nlbwmon_top_hosts_iterates_registry_without_mapping_access() -> N
     """Hostnames come from the registry without touching its mapping attributes."""
     import json
 
-    from homeassistant.helpers import device_registry as dr
-
     from custom_components.openwrt.coordinator import OpenWrtDataCoordinator
+    from homeassistant.helpers import device_registry as dr
 
     mac = "00:00:5E:00:53:21"
     entry = MagicMock()

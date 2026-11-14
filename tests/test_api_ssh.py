@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt.api.ssh import SshAuthError, SshClient
 
 

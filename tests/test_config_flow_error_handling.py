@@ -3,8 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
-
 from custom_components.openwrt.api.luci_rpc import (
     LuciRpcClient,
     LuciRpcPackageMissingError,
@@ -15,6 +13,7 @@ from custom_components.openwrt.const import (
     CONF_TRACK_DEVICES,
     CONNECTION_TYPE_UBUS,
 )
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 
 
 class MockResponse:

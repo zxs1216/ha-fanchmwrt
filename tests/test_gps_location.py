@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt.helpers.gps import (
     async_update_gps_location,
     parse_nmea_coordinate,

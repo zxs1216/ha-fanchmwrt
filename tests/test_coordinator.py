@@ -5,11 +5,10 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import UpdateFailed
-
 from custom_components.openwrt.api.base import OpenWrtData, SystemResources
 from custom_components.openwrt.coordinator import OpenWrtDataCoordinator
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 
 @pytest.mark.asyncio

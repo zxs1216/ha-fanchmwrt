@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt import _register_services
 from custom_components.openwrt.api.base import OpenWrtData
 from custom_components.openwrt.const import DATA_CLIENT, DATA_COORDINATOR, DOMAIN

@@ -5,9 +5,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import HomeAssistant
-
 from custom_components.openwrt.const import (
     CONF_MQTT_BROKER,
     CONF_MQTT_PASSWORD,
@@ -19,6 +16,8 @@ from custom_components.openwrt.const import (
     DOMAIN,
 )
 from custom_components.openwrt.device_tracker import async_setup_entry
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import HomeAssistant
 
 
 @pytest.fixture

@@ -3,8 +3,6 @@
 from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
-from homeassistant.components.sensor import SensorDeviceClass
-
 from custom_components.openwrt.api.base import (
     ConnectedDevice,
     OpenWrtData,
@@ -13,6 +11,7 @@ from custom_components.openwrt.api.base import (
 )
 from custom_components.openwrt.sensor import OpenWrtSensorEntity, _get_system_sensors
 from custom_components.openwrt.sensors.wireless import _create_wifi_base_sensors
+from homeassistant.components.sensor import SensorDeviceClass
 
 
 def test_uptime_conversion() -> None:

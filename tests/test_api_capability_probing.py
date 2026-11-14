@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
-
 from custom_components.openwrt.config_flow import OpenWrtConfigFlow
 from custom_components.openwrt.const import (
     CONNECTION_TYPE_LUCI_RPC,

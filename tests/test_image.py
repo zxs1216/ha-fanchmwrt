@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt.api.base import WifiCredentials
 from custom_components.openwrt.image import OpenWrtWifiQrImage
 
