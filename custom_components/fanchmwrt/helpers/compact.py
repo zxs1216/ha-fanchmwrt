@@ -172,10 +172,25 @@ def purge_legacy_entities(hass: Any, entry: ConfigEntry) -> tuple[int, int]:
     dev_reg = dr.async_get(hass)
     removed_entities = 0
 
-    for entity in list(ent_reg.entities.values()):
-        if entity.platform == "openwrt" or (
-            entity.config_entry_id == entry.entry_id and entity.disabled_by is not None
+    # 用官方 helper 遍历本条目：HA 2026 里 registry.entities 的直接迭代
+    # 已被弃用且行为不稳定，这里必须走 async_entries_for_config_entry。
+    for entity in list(er.async_entries_for_config_entry(ent_reg, entry.entry_id)):
+        unique_id = (entity.unique_id or "").lower()
+        tail = unique_id.split("_", 1)[-1] if "_" in unique_id else unique_id
+        # 禁用项 + 服务控制类僵尸项一律删除；保留项会在本次以「默认启用」重新注册
+        if (
+            getattr(entity, "disabled_by", None) is not None
+            or tail.startswith(V4_SERVICE_ENTITY_PREFIXES)
         ):
+            try:
+                ent_reg.async_remove(entity.entity_id)
+                removed_entities += 1
+            except (KeyError, ValueError):
+                pass
+
+    # 跨条目的旧版 openwrt 集成残留
+    for entity in list(ent_reg.entities.values()):
+        if getattr(entity, "platform", None) == "openwrt":
             try:
                 ent_reg.async_remove(entity.entity_id)
                 removed_entities += 1
