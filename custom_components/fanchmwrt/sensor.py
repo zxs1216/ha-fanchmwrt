@@ -13,6 +13,7 @@ from .helpers.compact import (
 )
 
 import logging
+from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
@@ -20,10 +21,12 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from .const import (
     CONF_ENABLE_LOAD,
+    CONF_HOST,
     CONF_ENABLE_NLBWMON_SENSORS,
     CONF_ENABLE_SNORT_SENSORS,
     CONF_ENABLE_VPN,
@@ -95,6 +98,53 @@ from .sensors import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class FanchmWrtStorageSummarySensor(
+    CoordinatorEntity[OpenWrtDataCoordinator], SensorEntity
+):
+    """v4 传感器块：存储（优先 /overlay，回退 /）。"""
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: OpenWrtDataCoordinator,
+        entry: ConfigEntry,
+        *,
+        key: str,
+        name: str,
+        value_fn: Any,
+        unit: str,
+        icon: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._value_fn = value_fn
+        self._attr_unique_id = f"{entry.entry_id}_{key}"
+        self._attr_name = name
+        self._attr_native_unit_of_measurement = unit
+        self._attr_icon = icon
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, str(entry.unique_id or entry.data.get(CONF_HOST)))},
+        )
+
+    @staticmethod
+    def _primary_usage(data: Any) -> Any | None:
+        items = list(getattr(data.system_resources, "storage", None) or [])
+        for mount in ("/overlay", "/"):
+            for item in items:
+                if item.mount_point == mount:
+                    return item
+        return items[0] if items else None
+
+    @property
+    def native_value(self) -> Any:
+        data = self.coordinator.data
+        if data is None:
+            return None
+        usage = self._primary_usage(data)
+        return self._value_fn(usage) if usage is not None else None
+
 
 __all__ = [
     "DeviceInfo",
@@ -168,6 +218,23 @@ async def async_setup_entry(
         entity
         for entity in build_router_diagnostics(openclash, entry)
         if isinstance(entity, FanchmWrtOpenClashSensor)
+    )
+    # v4.0.3：计划书传感器块的「存储」
+    v4_sensors.extend(
+        [
+            FanchmWrtStorageSummarySensor(
+                coordinator, entry,
+                key="v4_storage_usage", name="存储使用率",
+                value_fn=lambda usage: usage.percent,
+                unit="%", icon="mdi:harddisk",
+            ),
+            FanchmWrtStorageSummarySensor(
+                coordinator, entry,
+                key="v4_storage_free", name="可用存储空间",
+                value_fn=lambda usage: round(usage.free / 1024**2, 1),
+                unit="MB", icon="mdi:harddisk",
+            ),
+        ]
     )
     async_add_entities(v4_sensors)
 
