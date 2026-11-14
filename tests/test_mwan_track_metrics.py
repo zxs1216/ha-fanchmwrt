@@ -7,8 +7,6 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.components.sensor import SensorStateClass
-
 from custom_components.openwrt.api.base import (
     MwanStatus,
     OpenWrtData,
@@ -18,6 +16,7 @@ from custom_components.openwrt.api.luci_rpc import LuciRpcClient
 from custom_components.openwrt.api.ssh import SshClient
 from custom_components.openwrt.api.ubus import UbusClient
 from custom_components.openwrt.sensors.mwan import OpenWrtMwanMetricSensor
+from homeassistant.components.sensor import SensorStateClass
 
 NO_REPLY = 999999
 

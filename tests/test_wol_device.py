@@ -3,10 +3,9 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
-
 from custom_components.openwrt import _register_services
 from custom_components.openwrt.const import DATA_CLIENT, DOMAIN
+from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 
 
 @pytest.mark.asyncio

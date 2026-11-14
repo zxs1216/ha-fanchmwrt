@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-
 from custom_components.openwrt import (
     _register_services,
 )

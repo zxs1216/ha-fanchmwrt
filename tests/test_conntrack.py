@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt.api.base import SystemResources
 from custom_components.openwrt.api.ubus import UbusClient
 

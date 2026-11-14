@@ -3,9 +3,8 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.core import HomeAssistant
-
 from custom_components.openwrt import async_migrate_entry
+from homeassistant.core import HomeAssistant
 
 
 async def test_migration_v1_to_v2(hass: HomeAssistant):

@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt.api.base import ConnectedDevice, OpenWrtData
 from custom_components.openwrt.const import DATA_COORDINATOR, DOMAIN
 from custom_components.openwrt.coordinator import OpenWrtDataCoordinator

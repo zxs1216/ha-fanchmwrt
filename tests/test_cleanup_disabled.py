@@ -2,10 +2,9 @@
 
 from unittest.mock import MagicMock, patch
 
-from homeassistant.core import HomeAssistant
-
 from custom_components.openwrt import _async_cleanup_disabled_features
 from custom_components.openwrt.const import CONF_ENABLE_LED, CONF_TRACK_DEVICES, DOMAIN
+from homeassistant.core import HomeAssistant
 
 
 async def test_cleanup_disabled_features(hass: HomeAssistant) -> None:

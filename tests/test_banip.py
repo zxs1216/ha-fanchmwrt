@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt.api.ubus import UbusClient
 
 _REPORT = (

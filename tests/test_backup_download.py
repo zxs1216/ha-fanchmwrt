@@ -4,7 +4,6 @@ import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt import _register_services
 from custom_components.openwrt.const import DATA_CLIENT, DOMAIN
 

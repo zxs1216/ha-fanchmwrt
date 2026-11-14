@@ -4,7 +4,6 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
-
 from custom_components.openwrt.api.base import OpenWrtData
 from custom_components.openwrt.coordinator import OpenWrtDataCoordinator
 

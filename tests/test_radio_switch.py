@@ -3,8 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.exceptions import HomeAssistantError
-
 from custom_components.openwrt.api.base import OpenWrtData, WirelessInterface
 from custom_components.openwrt.switch import (
     OpenWrtRadioSwitch,
@@ -12,6 +10,7 @@ from custom_components.openwrt.switch import (
     _add_wireless_switches,
     async_setup_entry,
 )
+from homeassistant.exceptions import HomeAssistantError
 
 
 @pytest.mark.asyncio

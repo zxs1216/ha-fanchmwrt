@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from custom_components.openwrt.api.luci_rpc import LuciRpcClient
 from custom_components.openwrt.api.ssh import SshClient
 from custom_components.openwrt.api.ubus import UbusClient

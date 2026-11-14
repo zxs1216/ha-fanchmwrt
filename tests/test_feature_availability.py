@@ -6,7 +6,6 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-
 from custom_components.openwrt.api.base import (
     ConnectedDevice,
     DhcpLease,
@@ -310,17 +309,15 @@ class TestConstUpdates:
 
     def test_platforms_include_event(self) -> None:
         """Test that PLATFORMS includes event."""
-        from homeassistant.const import Platform
-
         from custom_components.openwrt.const import PLATFORMS
+        from homeassistant.const import Platform
 
         assert Platform.EVENT in PLATFORMS
 
     def test_platforms_include_number(self) -> None:
         """Test that PLATFORMS includes number."""
-        from homeassistant.const import Platform
-
         from custom_components.openwrt.const import PLATFORMS
+        from homeassistant.const import Platform
 
         assert Platform.NUMBER in PLATFORMS
 

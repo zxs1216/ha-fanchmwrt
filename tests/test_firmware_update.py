@@ -4,11 +4,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
 import pytest
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
-
 from custom_components.openwrt.coordinator import OpenWrtData, OpenWrtDataCoordinator
 from custom_components.openwrt.update import OpenWrtUpdateEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 
 @pytest.mark.asyncio
