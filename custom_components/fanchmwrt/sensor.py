@@ -146,6 +146,58 @@ class FanchmWrtStorageSummarySensor(
         return self._value_fn(usage) if usage is not None else None
 
 
+class FanchmWrtTrafficRateSensor(
+    CoordinatorEntity[OpenWrtDataCoordinator], SensorEntity
+):
+    """v4.1 路由器传感器块：实时上 / 下行速率（kB/s）。
+
+    从所有已启用的非虚拟接口中取最大速率，避免 br-lan 与物理口重复累加。
+    """
+
+    _attr_has_entity_name = True
+    _VIRTUAL_PREFIXES = ("lo", "veth", "docker", "tun", "utun", "ifb", "br-")
+
+    def __init__(
+        self,
+        coordinator: OpenWrtDataCoordinator,
+        entry: ConfigEntry,
+        *,
+        key: str,
+        name: str,
+        field: str,
+        icon: str,
+    ) -> None:
+        super().__init__(coordinator)
+        self._field = field
+        self._attr_unique_id = f"{entry.entry_id}_{key}"
+        self._attr_name = name
+        self._attr_native_unit_of_measurement = "kB/s"
+        self._attr_icon = icon
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, str(entry.unique_id or entry.data.get(CONF_HOST)))},
+        )
+
+    @property
+    def native_value(self) -> Any:
+        data = self.coordinator.data
+        if data is None:
+            return None
+        interfaces = [
+            item
+            for item in (getattr(data, "network_interfaces", None) or [])
+            if getattr(item, "up", False)
+            and not str(item.name).startswith(self._VIRTUAL_PREFIXES)
+        ]
+        best = max(
+            interfaces,
+            key=lambda item: float(getattr(item, self._field, 0) or 0),
+            default=None,
+        )
+        rate = float(getattr(best, self._field, 0) or 0) if best else 0.0
+        # rx_rate / tx_rate 的单位为 Mbps，换算为 kB/s
+        return round(rate * 128, 1)
+
+
 __all__ = [
     "DeviceInfo",
     "OpenWrtDeviceSensor",
@@ -233,6 +285,16 @@ async def async_setup_entry(
                 key="v4_storage_free", name="可用存储空间",
                 value_fn=lambda usage: round(usage.free / 1024**2, 1),
                 unit="MB", icon="mdi:harddisk",
+            ),
+            FanchmWrtTrafficRateSensor(
+                coordinator, entry,
+                key="v4_traffic_download", name="实时下载",
+                field="rx_rate", icon="mdi:download-network",
+            ),
+            FanchmWrtTrafficRateSensor(
+                coordinator, entry,
+                key="v4_traffic_upload", name="实时上传",
+                field="tx_rate", icon="mdi:upload-network",
             ),
         ]
     )

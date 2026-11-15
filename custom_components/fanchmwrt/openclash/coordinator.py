@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from ..const import CONF_MIHOMO_PORT, CONF_MIHOMO_SECRET, DEFAULT_MIHOMO_PORT
 from .api import MihomoClient, probe_dns, probe_tcp
+from .subscription import async_fetch_subscription
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,16 +49,24 @@ class OpenClashData:
     dns_latency: float | None = None
     internet_ok: bool = False
     gateway_latency: float | None = None
+    # 订阅套餐流量（GB）
+    sub_total: float | None = None
+    sub_used: float | None = None
+    sub_remaining: float | None = None
+    sub_percent: float | None = None
 
 
 class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
     """轮询 mihomo API，失败时只降级、不阻断整个集成加载。"""
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    def __init__(
+        self, hass: HomeAssistant, entry: ConfigEntry, router_client: Any
+    ) -> None:
         host = str(entry.data.get(CONF_HOST, ""))
         port = int(entry.options.get(CONF_MIHOMO_PORT, DEFAULT_MIHOMO_PORT))
         secret = str(entry.options.get(CONF_MIHOMO_SECRET, "") or "")
         self.client = MihomoClient(hass, host, port, secret)
+        self.router_client = router_client
         self.host = host
         self.port = port
         self.secret = secret
@@ -65,6 +74,7 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
         self._rules = 0
         self._version: str | None = None
         self._mode: str | None = None
+        self._subscription: dict[str, float] | None = None
         super().__init__(
             hass,
             _LOGGER,
@@ -134,6 +144,17 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
                 self._rules = await self.client.async_get_rule_count()
             except Exception:  # noqa: BLE001
                 pass
+        # 订阅剩余流量：约 10 分钟刷新一次；外部请求失败时沿用上次结果
+        if self._slow_tick == 1 or self._slow_tick % 40 == 0:
+            info = await async_fetch_subscription(self.hass, self.router_client)
+            if info:
+                self._subscription = info
+        if self._subscription:
+            data.sub_total = self._subscription.get("total")
+            data.sub_used = self._subscription.get("used")
+            data.sub_remaining = self._subscription.get("remaining")
+            data.sub_percent = self._subscription.get("percent")
+
         data.version = self._version
         data.mode = self._mode
         data.rules = self._rules

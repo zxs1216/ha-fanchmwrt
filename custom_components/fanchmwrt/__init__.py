@@ -38,7 +38,6 @@ from .helpers.compact import (
     router_identifier_set,
 )
 from .const import (
-    CONF_MIHOMO_SECRET,
     DATA_CLIENT,
     DATA_COORDINATOR,
     DATA_OPENCLASH,
@@ -282,10 +281,9 @@ def _async_register_v4_devices(
             )
             break
 
-    panel = f"http://{host}:{openclash.port}/ui/metacubexd/"
-    secret = str(entry.options.get(CONF_MIHOMO_SECRET, "") or "")
-    if secret:
-        panel += f"#/?hostname={host}&port={openclash.port}&secret={secret}"
+    # v4.1：不再跳到 metacubexd 代理面板，改为 OpenClash 运行状态页
+    #（即用户截图中含订阅剩余流量、运行数据、IP 检查的那页）
+    status_url = f"http://{host}/cgi-bin/luci/admin/services/openclash"
 
     dev_reg.async_get_or_create(
         config_entry_id=entry.entry_id,
@@ -293,7 +291,7 @@ def _async_register_v4_devices(
         name="OpenClash",
         manufacturer="FanchmWrt",
         model="Mihomo / OpenClash",
-        configuration_url=panel,
+        configuration_url=status_url,
     )
 
 
@@ -317,7 +315,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_config_entry_first_refresh()
 
         # v4: OpenClash 独立数据源，失败时只降级（不阻断集成加载）
-        openclash = OpenClashCoordinator(hass, entry)
+        openclash = OpenClashCoordinator(hass, entry, client)
         await openclash.async_refresh()
 
         # Clear any stale unit_of_measurement overrides from previous versions

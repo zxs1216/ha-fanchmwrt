@@ -222,6 +222,30 @@ def openclash_sensors(
     return [
         FanchmWrtOpenClashSensor(
             coordinator, entry,
+            key="oc_sub_remaining", name="剩余流量",
+            value_fn=lambda d: d.sub_remaining, unit="GB",
+            icon="mdi:gauge", require_api=False,
+        ),
+        FanchmWrtOpenClashSensor(
+            coordinator, entry,
+            key="oc_sub_total", name="套餐总流量",
+            value_fn=lambda d: d.sub_total, unit="GB",
+            icon="mdi:database", require_api=False,
+        ),
+        FanchmWrtOpenClashSensor(
+            coordinator, entry,
+            key="oc_sub_used", name="已用流量",
+            value_fn=lambda d: d.sub_used, unit="GB",
+            icon="mdi:chart-bar", require_api=False,
+        ),
+        FanchmWrtOpenClashSensor(
+            coordinator, entry,
+            key="oc_sub_percent", name="流量使用率",
+            value_fn=lambda d: d.sub_percent, unit="%",
+            icon="mdi:percent", require_api=False,
+        ),
+        FanchmWrtOpenClashSensor(
+            coordinator, entry,
             key="oc_current_node", name="当前节点",
             value_fn=lambda d: d.current_node, icon="mdi:server-network",
             attrs_fn=lambda d: {
