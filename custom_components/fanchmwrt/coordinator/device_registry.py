@@ -267,8 +267,6 @@ class DeviceRegistryMixin(_Base):
             sw_version=device_info.firmware_version,
             hw_version=device_info.board_name,
             via_device_id=via_device_id,  # type: ignore[call-arg]
-            # v4.2：左侧「访问」直达 HA 内部的路由器总览页
-            configuration_url="/fanchmwrt-router",
         )
 
         # 旁路由精简模式：不注册 Wireless Radio / Wireless SSID 设备。

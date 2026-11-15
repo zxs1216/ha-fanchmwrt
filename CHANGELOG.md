@@ -1,5 +1,15 @@
 # Changelog
 
+## v4.2.1 — 修复相对 configuration_url 导致集成启动失败
+
+- HA 的 device registry 只接受**绝对 URL**，`/fanchmwrt-router` 会抛
+  `ValueError: invalid configuration_url`，进而使 coordinator 首次刷新失败、实体全部消失。
+- 新增 `_ha_dashboard_url()`：用 HA 官方 `get_url(hass)` 取本站地址（回退
+  external_url / internal_url），拼出 `https://<本站>/fanchmwrt-openclash` 与
+  `.../fanchmwrt-router` 两个绝对链接。
+- 路由器设备的 `configuration_url` 不再由 coordinator 的 `async_get_or_create()` 传相对路径，
+  统一由 `_async_register_v4_devices()` 用 `async_update_device()` 写绝对 URL。
+
 ## v4.2.0 — HA 内部深色总览页（两个条目）
 
 用户澄清：不要内嵌第三方网页，而是要在 HA 里做一个类似「飞牛 · 系统总览」的页面，

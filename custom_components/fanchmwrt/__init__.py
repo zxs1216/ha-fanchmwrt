@@ -284,6 +284,25 @@ async def _async_cleanup_disabled_features(
                 dev_reg.async_remove_device(dev.id)
 
 
+def _ha_dashboard_url(hass: HomeAssistant, path: str) -> str:
+    """生成指向 HA 内部总览页的绝对 URL。
+
+    device registry 的 configuration_url 只接受绝对 URL，相对路径会抛 ValueError
+    并导致整个集成 setup 失败，因此这里必须拿到 HA 自身的访问地址。
+    """
+    try:
+        from homeassistant.helpers.network import get_url  # noqa: PLC0415
+
+        base = get_url(hass)
+    except Exception:  # noqa: BLE001
+        base = ""
+    if not base:
+        base = hass.config.external_url or hass.config.internal_url or ""
+    if not base:
+        base = "http://127.0.0.1:8123"
+    return f"{base.rstrip('/')}/{path.lstrip('/')}"
+
+
 def _async_register_v4_devices(
     hass: HomeAssistant, entry: ConfigEntry, openclash: OpenClashCoordinator
 ) -> None:
@@ -293,15 +312,17 @@ def _async_register_v4_devices(
     router_ident = str(entry.unique_id or host)
 
     # v4.2：两个设备的「访问」都指向 HA 内部的深色总览页，不跳任何外部站点
+    router_url = _ha_dashboard_url(hass, "fanchmwrt-router")
     for device in dr.async_entries_for_config_entry(dev_reg, entry.entry_id):
         if (DOMAIN, router_ident) in device.identifiers:
-            dev_reg.async_update_device(
-                device.id,
-                configuration_url="/fanchmwrt-router",
-            )
+            if device.configuration_url != router_url:
+                dev_reg.async_update_device(
+                    device.id,
+                    configuration_url=router_url,
+                )
             break
 
-    status_url = "/fanchmwrt-openclash"
+    status_url = _ha_dashboard_url(hass, "fanchmwrt-openclash")
 
     oc_device = dev_reg.async_get_or_create(
         config_entry_id=entry.entry_id,
