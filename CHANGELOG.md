@@ -1,5 +1,15 @@
 # Changelog
 
+## v4.1.1 — 修复订阅流量 unknown 与「访问」链接未生效
+
+- **订阅流量 unknown**：增加经路由器 SSH 执行 curl 的兜底路径（与 OpenClash LuCI 页面同源），
+  覆盖 HA 主机直连订阅地址受限的情况；启动初期在 1/3/6/10 次轮询重试，之后约 10 分钟刷新；
+  失败原因改为 WARNING 日志便于定位。
+- **「访问」链接未更新**：`async_get_or_create()` 不会覆盖已存在设备的 `configuration_url`，
+  改为 `async_update_device()` 显式更新，确保从 metacubexd 代理面板切到 OpenClash 运行状态页。
+- 部署说明：本次 Marketplace 受 GitHub 匿名 API 限流，改用等效的手动整包部署；
+  限流解除后在 Marketplace 点一次更新即可对齐版本记录。
+
 ## v4.1.0 — 实时流量、订阅剩余流量与「访问」重定向
 
 **按使用反馈调整**

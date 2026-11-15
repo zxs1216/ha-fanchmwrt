@@ -285,7 +285,7 @@ def _async_register_v4_devices(
     #（即用户截图中含订阅剩余流量、运行数据、IP 检查的那页）
     status_url = f"http://{host}/cgi-bin/luci/admin/services/openclash"
 
-    dev_reg.async_get_or_create(
+    oc_device = dev_reg.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, openclash_device_id(entry))},
         name="OpenClash",
@@ -293,6 +293,9 @@ def _async_register_v4_devices(
         model="Mihomo / OpenClash",
         configuration_url=status_url,
     )
+    # async_get_or_create 不会覆盖已存在设备的 configuration_url，需显式更新
+    if oc_device.configuration_url != status_url:
+        dev_reg.async_update_device(oc_device.id, configuration_url=status_url)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

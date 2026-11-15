@@ -12,7 +12,13 @@ from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from ..const import CONF_MIHOMO_PORT, CONF_MIHOMO_SECRET, DEFAULT_MIHOMO_PORT
+from ..const import (
+    CONF_MIHOMO_PORT,
+    CONF_MIHOMO_SECRET,
+    CONF_PASSWORD,
+    CONF_USERNAME,
+    DEFAULT_MIHOMO_PORT,
+)
 from .api import MihomoClient, probe_dns, probe_tcp
 from .subscription import async_fetch_subscription
 
@@ -67,6 +73,11 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
         secret = str(entry.options.get(CONF_MIHOMO_SECRET, "") or "")
         self.client = MihomoClient(hass, host, port, secret)
         self.router_client = router_client
+        self._ssh = {
+            "host": host,
+            "username": str(entry.data.get(CONF_USERNAME, "root")),
+            "password": str(entry.data.get(CONF_PASSWORD, "") or ""),
+        }
         self.host = host
         self.port = port
         self.secret = secret
@@ -144,9 +155,11 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
                 self._rules = await self.client.async_get_rule_count()
             except Exception:  # noqa: BLE001
                 pass
-        # 订阅剩余流量：约 10 分钟刷新一次；外部请求失败时沿用上次结果
-        if self._slow_tick == 1 or self._slow_tick % 40 == 0:
-            info = await async_fetch_subscription(self.hass, self.router_client)
+        # 订阅剩余流量：启动初期重试几次，稳定后约 10 分钟刷新一次
+        if self._slow_tick in (1, 3, 6, 10) or self._slow_tick % 40 == 0:
+            info = await async_fetch_subscription(
+                self.hass, self.router_client, self._ssh
+            )
             if info:
                 self._subscription = info
         if self._subscription:

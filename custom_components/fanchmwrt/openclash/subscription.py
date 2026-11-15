@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import logging
 import re
+import shlex
 from typing import Any
 
 import aiohttp
@@ -71,37 +72,90 @@ def parse_userinfo(header: str) -> dict[str, float] | None:
     }
 
 
+def _ssh_fetch_header(
+    host: str, username: str, password: str, url: str
+) -> str:
+    """兜底：在路由器上执行 curl 取订阅响应头（该路径已实测可用）。"""
+    import paramiko  # noqa: PLC0415 - HA 已通过 manifest 安装
+
+    command = (
+        "curl -sk -D - -o /dev/null --max-time 20 "
+        f"-A '{SUBSCRIBER_UA}' {shlex.quote(url)} "
+        "| grep -i '^subscription-userinfo:'"
+    )
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(
+            host,
+            22,
+            username=username or "root",
+            password=password,
+            timeout=8,
+            allow_agent=False,
+            look_for_keys=False,
+        )
+        _, stdout, _ = client.exec_command(command, timeout=30)
+        return stdout.read().decode("utf-8", "ignore").strip()
+    finally:
+        client.close()
+
+
 async def async_fetch_subscription(
-    hass: HomeAssistant, router_client: Any
+    hass: HomeAssistant,
+    router_client: Any,
+    ssh: dict[str, str] | None = None,
 ) -> dict[str, float] | None:
-    """低频获取一次订阅流量信息，任何失败都返回 None（不阻断集成）。"""
+    """低频获取一次订阅流量信息，任何失败都返回 None（不阻断集成）。
+
+    优先由 HA 主机直接请求订阅地址；若主机网络受限，则回退到在路由器上
+    执行 curl（与 OpenClash LuCI 页面相同的数据来源）。
+    """
     try:
         uci_text = await router_client.read_file(UCI_CONFIG_PATH)
     except Exception as err:  # noqa: BLE001
-        _LOGGER.debug("读取 OpenClash UCI 配置失败: %s", err)
+        _LOGGER.warning("读取 OpenClash UCI 配置失败: %s", err)
         return None
     if not uci_text:
+        _LOGGER.warning("OpenClash UCI 配置为空，无法定位订阅地址")
         return None
 
     url = parse_subscription_url(uci_text)
     if not url:
+        _LOGGER.warning("未能从 UCI 配置解析出订阅地址")
         return None
 
+    header = ""
     response = None
     try:
         session = async_get_clientsession(hass)
         response = await session.get(
             url,
             headers={"User-Agent": SUBSCRIBER_UA},
-            timeout=aiohttp.ClientTimeout(total=15),
+            timeout=aiohttp.ClientTimeout(total=12),
             ssl=False,
             allow_redirects=True,
         )
         header = response.headers.get("subscription-userinfo", "")
-        return parse_userinfo(header)
     except Exception as err:  # noqa: BLE001
-        _LOGGER.debug("获取订阅流量信息失败: %s", err)
-        return None
+        _LOGGER.warning("HA 直连订阅地址失败，尝试路由器兜底: %s", err)
     finally:
         if response is not None:
             response.close()
+
+    if not header and ssh and ssh.get("host") and ssh.get("password"):
+        try:
+            header = await hass.async_add_executor_job(
+                _ssh_fetch_header,
+                ssh["host"],
+                ssh.get("username", "root"),
+                ssh["password"],
+                url,
+            )
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.warning("路由器兜底获取订阅信息失败: %s", err)
+
+    parsed = parse_userinfo(header)
+    if parsed is None:
+        _LOGGER.warning("订阅响应头缺少有效的 subscription-userinfo 字段")
+    return parsed
