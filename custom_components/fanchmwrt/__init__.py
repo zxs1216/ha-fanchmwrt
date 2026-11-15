@@ -15,6 +15,8 @@ from __future__ import annotations
 import asyncio
 import importlib
 import logging
+import shutil
+from pathlib import Path
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -55,11 +57,28 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
+FRONTEND_ASSET = "fanchmwrt-overview.js"
+
 type OpenWrtConfigEntry = ConfigEntry
 
 
+def _publish_frontend_asset(hass: HomeAssistant) -> None:
+    """把随包的 Lovelace 总览卡片发布到 /config/www，供仪表盘资源引用。"""
+    source = Path(__file__).parent / "frontend" / FRONTEND_ASSET
+    if not source.is_file():
+        return
+    target = Path(hass.config.path("www", FRONTEND_ASSET))
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if not target.is_file() or target.read_bytes() != source.read_bytes():
+        shutil.copyfile(source, target)
+
+
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
-    """Set up integration."""
+    """Set up integration and publish the overview card asset."""
+    try:
+        await hass.async_add_executor_job(_publish_frontend_asset, hass)
+    except Exception as err:  # noqa: BLE001 - 前端资源发布失败不影响集成功能
+        _LOGGER.warning("发布 FanchmWrt 总览卡片资源失败: %s", err)
     return True
 
 
@@ -273,17 +292,16 @@ def _async_register_v4_devices(
     host = str(entry.data.get(CONF_HOST, ""))
     router_ident = str(entry.unique_id or host)
 
+    # v4.2：两个设备的「访问」都指向 HA 内部的深色总览页，不跳任何外部站点
     for device in dr.async_entries_for_config_entry(dev_reg, entry.entry_id):
         if (DOMAIN, router_ident) in device.identifiers:
             dev_reg.async_update_device(
                 device.id,
-                configuration_url=f"http://{host}/cgi-bin/luci/admin/status/overview",
+                configuration_url="/fanchmwrt-router",
             )
             break
 
-    # v4.1：不再跳到 metacubexd 代理面板，改为 OpenClash 运行状态页
-    #（即用户截图中含订阅剩余流量、运行数据、IP 检查的那页）
-    status_url = f"http://{host}/cgi-bin/luci/admin/services/openclash"
+    status_url = "/fanchmwrt-openclash"
 
     oc_device = dev_reg.async_get_or_create(
         config_entry_id=entry.entry_id,

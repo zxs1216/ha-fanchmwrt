@@ -1,5 +1,22 @@
 # Changelog
 
+## v4.2.0 — HA 内部深色总览页（两个条目）
+
+用户澄清：不要内嵌第三方网页，而是要在 HA 里做一个类似「飞牛 · 系统总览」的页面，
+点设备页「访问」直接进 HA 自己的页面。本版实现：
+
+- 新增随包**零依赖自定义 Lovelace 卡片** `frontend/fanchmwrt-overview.js`
+  （`custom:fanchmwrt-overview-card`）：深色紧凑指标网格、分组标题、状态徽章、
+  订阅流量进度条、分流组节点一览，以及带自定义弹窗的**二次确认控制按钮**。
+- 集成 `async_setup` 时自动把卡片发布到 `/config/www/fanchmwrt-overview.js`，
+  注册为仪表盘资源 `/local/fanchmwrt-overview.js`（type: module）。
+- 新建两个 **panel 模式、不进侧边栏**的 HA 仪表盘：
+  `fanchmwrt-openclash`（运行状态 / 流量 / 订阅套餐 / DNS 诊断 / 分流组 / 控制）与
+  `fanchmwrt-router`（资源监控 / 网络流量 / 存储 / 连网诊断 / 控制）。
+- 两个设备的 `configuration_url` 由外部站点改为 HA 内部路径
+  `/fanchmwrt-openclash`、`/fanchmwrt-router`，点击「访问」不再离开 HA。
+- _control 项的二次确认随总览页回归_：卡片内自定义确认弹窗，确认后才调用 `button.press`。
+
 ## v4.1.1 — 修复订阅流量 unknown 与「访问」链接未生效
 
 - **订阅流量 unknown**：增加经路由器 SSH 执行 curl 的兜底路径（与 OpenClash LuCI 页面同源），
