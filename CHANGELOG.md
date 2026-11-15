@@ -1,5 +1,26 @@
 # Changelog
 
+## v4.3.0 — 「访问」改为设备页内的可拖动悬浮窗
+
+用户指出目标形态不是「跳到仪表盘」，而是像飞牛 fnOS 集成那样：
+点击「访问」后**在当前设备页弹出可拖动、可缩放的浮层**。参照其实现重写：
+
+- 新增 `frontend/fanchmwrt-float.js`，通过 `homeassistant.components.frontend.add_extra_js_url()`
+  **全局注入** HA 前端（dashboard resource 只在 Lovelace 页加载，设备页拿不到）。
+- 捕获阶段 `document.addEventListener("click", handler, true)` 拦截点击，
+  用 `composedPath()` 穿透 `ha-button` 的 Shadow DOM 找到 `<a href>`；
+  匹配 `/fanchmwrt-openclash`、`/fanchmwrt-router` 后 `preventDefault()`，
+  不再整页跳转，改为创建浮层。
+- 浮层：深色标题栏（拖动 grip）、`resize: both` 可缩放、刷新 / 新标签打开 / 关闭按钮；
+  两个条目各一个独立窗口，可同时打开、互不替换。
+- 浮层内**直接挂载** `fanchmwrt-overview-card`（同源读取 `home-assistant.hass`，
+  每 2 秒同步一次状态），无需 iframe、无需后端视图与鉴权签名。
+- 卡片新增 `compact` 宿主属性以适配浮层高度；配置抽出为
+  `window.FANCHMWRT_CARD_CONFIG`，浮层与两个 Lovelace 面板共用同一份。
+- Ctrl / 中键点击不做拦截，仍可新标签打开仪表盘作为兜底；
+  链接会按浏览器当前 origin 重写，反代 / 域名访问同样可用。
+- 集成启动时自动发布两个 JS 到 `/config/www/`。
+
 ## v4.2.1 — 修复相对 configuration_url 导致集成启动失败
 
 - HA 的 device registry 只接受**绝对 URL**，`/fanchmwrt-router` 会抛

@@ -57,28 +57,33 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
-FRONTEND_ASSET = "fanchmwrt-overview.js"
+FRONTEND_ASSETS = ("fanchmwrt-overview.js", "fanchmwrt-float.js")
+FLOAT_JS_URL = "/local/fanchmwrt-float.js"
 
 type OpenWrtConfigEntry = ConfigEntry
 
 
-def _publish_frontend_asset(hass: HomeAssistant) -> None:
-    """把随包的 Lovelace 总览卡片发布到 /config/www，供仪表盘资源引用。"""
-    source = Path(__file__).parent / "frontend" / FRONTEND_ASSET
-    if not source.is_file():
-        return
-    target = Path(hass.config.path("www", FRONTEND_ASSET))
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if not target.is_file() or target.read_bytes() != source.read_bytes():
-        shutil.copyfile(source, target)
+def _publish_frontend_assets(hass: HomeAssistant) -> None:
+    """把随包的总览卡片与悬浮窗脚本发布到 /config/www。"""
+    for name in FRONTEND_ASSETS:
+        source = Path(__file__).parent / "frontend" / name
+        if not source.is_file():
+            continue
+        target = Path(hass.config.path("www", name))
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.is_file() or target.read_bytes() != source.read_bytes():
+            shutil.copyfile(source, target)
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
-    """Set up integration and publish the overview card asset."""
+    """发布前端资源，并全局注入悬浮窗脚本（拦截设备页「访问」点击）。"""
     try:
-        await hass.async_add_executor_job(_publish_frontend_asset, hass)
-    except Exception as err:  # noqa: BLE001 - 前端资源发布失败不影响集成功能
-        _LOGGER.warning("发布 FanchmWrt 总览卡片资源失败: %s", err)
+        await hass.async_add_executor_job(_publish_frontend_assets, hass)
+        from homeassistant.components import frontend  # noqa: PLC0415
+
+        frontend.add_extra_js_url(hass, FLOAT_JS_URL)
+    except Exception as err:  # noqa: BLE001 - 前端资源失败不影响集成功能
+        _LOGGER.warning("注册 FanchmWrt 悬浮窗前端模块失败: %s", err)
     return True
 
 

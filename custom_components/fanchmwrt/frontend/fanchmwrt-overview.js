@@ -5,6 +5,7 @@
 
 const CSS = `
 :host { display: block; }
+:host([compact]) .fw { min-height: 0; height: 100%; overflow-y: auto; }
 .fw {
   --bg: #0f1218; --tile: #1a1f2a; --line: #262d3b; --line2: #333d50;
   --text: #e7ebf3; --muted: #8b94a6; --dim: #6f7a8d;
@@ -269,7 +270,9 @@ class FanchmWrtOverviewCard extends HTMLElement {
   }
 }
 
-customElements.define("fanchmwrt-overview-card", FanchmWrtOverviewCard);
+if (!customElements.get("fanchmwrt-overview-card")) {
+  customElements.define("fanchmwrt-overview-card", FanchmWrtOverviewCard);
+}
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "fanchmwrt-overview-card",
@@ -277,3 +280,82 @@ window.customCards.push({
   description: "深色紧凑总览：OpenClash / 路由器",
   preview: true,
 });
+
+/* 供设备页「访问」悬浮窗复用的同一份配置（与两个 Lovelace 面板保持一致）。 */
+window.FANCHMWRT_CARD_CONFIG = {
+  openclash: {
+    type: "custom:fanchmwrt-overview-card",
+    mode: "openclash",
+    title: "OpenClash · 总览",
+    subtitle: "Mihomo / OpenClash · FanchmWrt 旁路由",
+    meta: "mihomo API 9090 · 15 秒轮询 · 订阅信息约 10 分钟刷新",
+    running_entity: "binary_sensor.openclash_yun_xing_openclash",
+    entities: {
+      version: "sensor.nei_he_ban_ben_openclash",
+      node: "sensor.dang_qian_jie_dian_openclash",
+      mode: "sensor.dai_li_mo_shi_openclash",
+      connections: "sensor.huo_dong_lian_jie_shu_openclash",
+      rules: "sensor.gui_ze_shu_openclash",
+      dns_health: "binary_sensor.dns_jie_xi_jian_kang_openclash",
+      dns_latency: "sensor.dns_jie_xi_yan_chi_openclash",
+      down_rate: "sensor.shi_shi_xia_zai_openclash",
+      up_rate: "sensor.shi_shi_shang_chuan_openclash",
+      proxy_total: "sensor.dai_li_lei_ji_liu_liang_openclash",
+      down_total: "sensor.lei_ji_xia_zai_openclash",
+      up_total: "sensor.lei_ji_shang_chuan_openclash",
+      sub_remaining: "sensor.sheng_yu_liu_liang_openclash",
+      sub_total: "sensor.tao_can_zong_liu_liang_openclash",
+      sub_used: "sensor.yi_yong_liu_liang_openclash",
+      sub_percent: "sensor.liu_liang_shi_yong_lu_openclash",
+    },
+    group_entities: [
+      { label: "🚀 节点选择", entity: "select.jie_dian_xuan_ze_jie_dian_openclash" },
+      { label: "🎯 Gemini", entity: "select.gemini_jie_dian_openclash" },
+      { label: "🎯 TikTok", entity: "select.tiktok_jie_dian_openclash" },
+      { label: "🎯 Discord", entity: "select.discord_jie_dian_openclash" },
+      { label: "🎯 X", entity: "select.x_jie_dian_openclash" },
+    ],
+    actions: [
+      {
+        label: "清理 DNS 缓存",
+        entity: "button.shua_xin_dns_huan_cun_openclash",
+        confirm: "确认清空 OpenClash 的 Fake-IP / DNS 缓存？",
+      },
+    ],
+  },
+  router: {
+    type: "custom:fanchmwrt-overview-card",
+    mode: "router",
+    title: "JCG Q30 PRO · 系统总览",
+    subtitle: "FanchmWrt 旁路由 · 系统 / 网络 / 存储",
+    meta: "ubus 数据源 · 60 秒轮询",
+    running_entity: "binary_sensor.connected_jcg_q30_pro",
+    entities: {
+      cpu: "sensor.cpu_usage_jcg_q30_pro",
+      memory: "sensor.memory_usage_jcg_q30_pro",
+      load: "sensor.load_1m_jcg_q30_pro",
+      temperature: "sensor.temperature_jcg_q30_pro",
+      clients: "sensor.connected_clients_jcg_q30_pro",
+      uptime: "sensor.uptime_jcg_q30_pro",
+      down_rate: "sensor.shi_shi_xia_zai_jcg_q30_pro",
+      up_rate: "sensor.shi_shi_shang_chuan_jcg_q30_pro",
+      lan_ip: "sensor.lan_ipv4_address_jcg_q30_pro",
+      gateway: "sensor.wang_guan_yan_chi_jcg_q30_pro",
+      dns_latency: "sensor.dns_jie_xi_hao_shi_jcg_q30_pro",
+      storage_usage: "sensor.cun_chu_shi_yong_lu_jcg_q30_pro",
+      storage_free: "sensor.ke_yong_cun_chu_kong_jian_jcg_q30_pro",
+      internet: "binary_sensor.wai_wang_lian_tong_jcg_q30_pro",
+      connected: "binary_sensor.connected_jcg_q30_pro",
+      eth0: "binary_sensor.eth0_connected_jcg_q30_pro",
+      reboot_required: "binary_sensor.reboot_required_jcg_q30_pro",
+    },
+    actions: [
+      {
+        label: "重启路由器",
+        entity: "button.reboot_router_jcg_q30_pro",
+        confirm: "确认重启路由器？会短暂断网。",
+        danger: true,
+      },
+    ],
+  },
+};
