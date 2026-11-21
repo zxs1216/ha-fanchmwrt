@@ -55,14 +55,28 @@ def parse_subscription_url(uci_text: str) -> str | None:
 
 def parse_userinfo(header: str) -> dict[str, float] | None:
     """解析 subscription-userinfo 响应头，产出 GB / 百分比。"""
+    if not header or not header.strip():
+        return None
+
+    # 记录接收到的响应头用于调试
+    _LOGGER.debug("订阅响应头内容: %s", header[:200])
+
     up = re.search(r"upload=(\d+)", header)
     down = re.search(r"download=(\d+)", header)
     total = re.search(r"total=(\d+)", header)
+
     if not (up and down and total):
+        _LOGGER.debug(
+            "订阅响应头解析失败 - upload: %s, download: %s, total: %s",
+            bool(up), bool(down), bool(total)
+        )
         return None
+
     upload, download, limit = int(up.group(1)), int(down.group(1)), int(total.group(1))
     if limit <= 0:
+        _LOGGER.debug("订阅流量总额无效: %d", limit)
         return None
+
     used = upload + download
     return {
         "total": round(limit / GB, 2),
@@ -125,6 +139,8 @@ async def async_fetch_subscription(
         _LOGGER.warning("未能从 UCI 配置解析出订阅地址")
         return None
 
+    _LOGGER.debug("准备请求订阅地址: %s", url[:50] + "...")
+
     header = ""
     response = None
     try:
@@ -137,14 +153,19 @@ async def async_fetch_subscription(
             allow_redirects=True,
         )
         header = response.headers.get("subscription-userinfo", "")
+        if header:
+            _LOGGER.debug("成功获取订阅响应头")
+        else:
+            _LOGGER.debug("订阅响应头中未包含 subscription-userinfo 字段")
     except Exception as err:  # noqa: BLE001
-        _LOGGER.warning("HA 直连订阅地址失败，尝试路由器兜底: %s", err)
+        _LOGGER.debug("HA 直连订阅地址失败，尝试路由器兜底: %s", err)
     finally:
         if response is not None:
             response.close()
 
     if not header and ssh and ssh.get("host") and ssh.get("password"):
         try:
+            _LOGGER.debug("通过 SSH 在路由器上执行 curl 获取订阅信息")
             header = await hass.async_add_executor_job(
                 _ssh_fetch_header,
                 ssh["host"],
@@ -152,10 +173,21 @@ async def async_fetch_subscription(
                 ssh["password"],
                 url,
             )
+            if header:
+                _LOGGER.debug("SSH 兜底成功获取订阅响应头")
         except Exception as err:  # noqa: BLE001
-            _LOGGER.warning("路由器兜底获取订阅信息失败: %s", err)
+            _LOGGER.debug("路由器兜底获取订阅信息失败: %s", err)
 
     parsed = parse_userinfo(header)
-    if parsed is None:
-        _LOGGER.warning("订阅响应头缺少有效的 subscription-userinfo 字段")
+    if parsed is None and header:
+        # 只在有响应头但解析失败时才记录警告
+        _LOGGER.warning(
+            "订阅响应头存在但解析失败，请检查响应头格式。响应头内容: %s",
+            header[:200] if header else "(空)"
+        )
+    elif parsed is None:
+        # 完全没有响应头，降级为 debug
+        _LOGGER.debug(
+            "未获取到订阅响应头 subscription-userinfo，可能订阅服务商未提供流量信息"
+        )
     return parsed
