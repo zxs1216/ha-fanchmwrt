@@ -143,6 +143,8 @@ async def async_fetch_subscription(
 
     header = ""
     response = None
+
+    # 尝试 1: GET 请求（大部分订阅服务支持）
     try:
         session = async_get_clientsession(hass)
         response = await session.get(
@@ -152,17 +154,41 @@ async def async_fetch_subscription(
             ssl=False,
             allow_redirects=True,
         )
-        header = response.headers.get("subscription-userinfo", "")
-        if header:
-            _LOGGER.debug("成功获取订阅响应头")
-        else:
-            _LOGGER.debug("订阅响应头中未包含 subscription-userinfo 字段")
+        # 支持大小写不敏感的响应头查找
+        for key, value in response.headers.items():
+            if key.lower() == "subscription-userinfo":
+                header = value
+                _LOGGER.debug("通过 GET 请求成功获取订阅响应头")
+                break
     except Exception as err:  # noqa: BLE001
-        _LOGGER.debug("HA 直连订阅地址失败，尝试路由器兜底: %s", err)
+        _LOGGER.debug("GET 请求失败: %s", err)
     finally:
         if response is not None:
             response.close()
 
+    # 尝试 2: HEAD 请求（部分订阅服务只支持 HEAD）
+    if not header:
+        try:
+            session = async_get_clientsession(hass)
+            response = await session.head(
+                url,
+                headers={"User-Agent": SUBSCRIBER_UA},
+                timeout=aiohttp.ClientTimeout(total=12),
+                ssl=False,
+                allow_redirects=True,
+            )
+            for key, value in response.headers.items():
+                if key.lower() == "subscription-userinfo":
+                    header = value
+                    _LOGGER.debug("通过 HEAD 请求成功获取订阅响应头")
+                    break
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.debug("HEAD 请求失败: %s", err)
+        finally:
+            if response is not None:
+                response.close()
+
+    # 尝试 3: SSH 在路由器上执行 curl（兜底方案）
     if not header and ssh and ssh.get("host") and ssh.get("password"):
         try:
             _LOGGER.debug("通过 SSH 在路由器上执行 curl 获取订阅信息")
@@ -180,14 +206,20 @@ async def async_fetch_subscription(
 
     parsed = parse_userinfo(header)
     if parsed is None and header:
-        # 只在有响应头但解析失败时才记录警告
+        # 有响应头但解析失败
         _LOGGER.warning(
-            "订阅响应头存在但解析失败，请检查响应头格式。响应头内容: %s",
+            "订阅响应头存在但解析失败。响应头内容: %s",
             header[:200] if header else "(空)"
         )
     elif parsed is None:
-        # 完全没有响应头，降级为 debug
+        # 完全没有响应头（订阅服务商未提供流量信息）
         _LOGGER.debug(
-            "未获取到订阅响应头 subscription-userinfo，可能订阅服务商未提供流量信息"
+            "未获取到订阅响应头 subscription-userinfo。"
+            "可能原因：1) 订阅服务商未提供流量信息 "
+            "2) 订阅地址需要特殊认证 "
+            "3) 网络连接问题"
         )
+    else:
+        _LOGGER.info("成功获取并解析订阅流量信息: 总流量 %s GB, 已用 %s GB",
+                     parsed.get("total"), parsed.get("used"))
     return parsed
