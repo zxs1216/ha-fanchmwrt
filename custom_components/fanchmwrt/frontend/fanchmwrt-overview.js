@@ -29,6 +29,10 @@ const CSS = `
 .group h2 { margin: 0 0 9px 2px; font-size: 12px; font-weight: 600;
   color: var(--muted); letter-spacing: .6px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 8px; }
+.grid.subscriptions { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.subscriptions .label { white-space: normal; overflow-wrap: anywhere; }
+.plan-remaining { font-size: 17px; font-weight: 700; }
+.plan-details { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 5px; overflow-wrap: anywhere; }
 .tile { background: var(--tile); border: 1px solid var(--line); border-radius: 9px;
   padding: 10px 12px; min-height: 64px; box-sizing: border-box; transition: border-color .15s; }
 .tile:hover { border-color: var(--line2); }
@@ -192,6 +196,22 @@ class FanchmWrtOverviewCard extends HTMLElement {
       note + `</div>`;
   }
 
+  _subscriptionTiles(plans) {
+    return plans.map((plan) => {
+      const title = plan.name === plan.profile ? plan.name : `${plan.profile} · ${plan.name}`;
+      const quota = (value) => Number.isFinite(value) ? `${value.toLocaleString("zh-CN")} GB` : "—";
+      const remaining = plan.unlimited ? "不限量" : quota(plan.remaining);
+      const percent = Number.isFinite(plan.percent) ? `${plan.percent}%` : "—";
+      const date = plan.expires_at ? new Date(plan.expires_at * 1000).toLocaleDateString("zh-CN") : "—";
+      const details = plan.has_userinfo
+        ? `已用 ${quota(plan.used)} · 总量 ${plan.unlimited ? "不限量" : quota(plan.total)} · 使用率 ${percent} · 到期 ${date}`
+        : "";
+      return `<div class="tile"><div class="label">${esc(title)}${plan.active ? "（当前）" : ""}</div>` +
+        `<div class="plan-remaining">${esc(plan.has_userinfo ? `剩余 ${remaining}` : "暂无流量数据")}</div>` +
+        (details ? `<div class="plan-details">${esc(details)}</div>` : "") + `</div>`;
+    }).join("");
+  }
+
   _render() {
     if (!this._config) return;
     if (!this._hass) {
@@ -212,8 +232,14 @@ class FanchmWrtOverviewCard extends HTMLElement {
       `<div class="meta">${esc(cfg.meta || "")}</div></div>${badge}</div>`;
 
     for (const group of groups) {
-      html += `<div class="group"><h2>${esc(group.title)}</h2><div class="grid">`;
-      for (const item of group.items) html += this._tile(item);
+      const plans = group.title === "订阅套餐" ? this._state("sub_remaining")?.attributes?.subscriptions : null;
+      const hasPlans = Array.isArray(plans) && plans.length > 0;
+      html += `<div class="group"><h2>${esc(group.title)}</h2><div class="grid${hasPlans ? " subscriptions" : ""}">`;
+      if (hasPlans) {
+        html += this._subscriptionTiles(plans);
+      } else {
+        for (const item of group.items) html += this._tile(item);
+      }
       html += `</div></div>`;
     }
 

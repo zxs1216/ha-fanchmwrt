@@ -119,6 +119,7 @@ platforms = [
     "sensor",
     "binary_sensor",
     "switch",
+    "select",
     "button",
     "light",
     "update",

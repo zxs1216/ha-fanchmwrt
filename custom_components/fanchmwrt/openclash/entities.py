@@ -28,6 +28,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from ..const import DOMAIN
 from .coordinator import SELECTABLE_GROUPS, OpenClashCoordinator, OpenClashData
+from .subscription import Subscription
 
 
 def openclash_device_id(entry: ConfigEntry) -> str:
@@ -225,6 +226,9 @@ def openclash_sensors(
             key="oc_sub_remaining", name="剩余流量",
             value_fn=lambda d: d.sub_remaining, unit="GB",
             icon="mdi:gauge", require_api=False,
+            attrs_fn=lambda d: {
+                "subscriptions": [_subscription_attrs(sub) for sub in d.subscriptions],
+            },
         ),
         FanchmWrtOpenClashSensor(
             coordinator, entry,
@@ -315,6 +319,48 @@ def openclash_sensors(
             icon="mdi:swap-horizontal",
         ),
     ]
+
+
+def _subscription_attrs(sub: Subscription) -> dict[str, Any]:
+    traffic = sub.traffic
+    return {
+        "name": sub.name,
+        "profile": sub.profile,
+        "active": sub.active,
+        "has_userinfo": traffic is not None,
+        "unlimited": traffic is not None and traffic.total is None,
+        "total": traffic.total if traffic else None,
+        "used": traffic.used if traffic else None,
+        "remaining": traffic.remaining if traffic else None,
+        "percent": traffic.percent if traffic else None,
+        "expires_at": traffic.expires_at if traffic else None,
+    }
+
+
+def openclash_subscription_sensor(
+    coordinator: OpenClashCoordinator, entry: ConfigEntry, sub: Subscription
+) -> FanchmWrtOpenClashSensor:
+    """Expose an individual plan independently of the active profile."""
+    key = sub.key
+    name = sub.name if sub.name == sub.profile else f"{sub.profile} · {sub.name}"
+
+    def plan(data: OpenClashData) -> Subscription | None:
+        return next((item for item in data.subscriptions if item.key == key), None)
+
+    def remaining(data: OpenClashData) -> float | None:
+        item = plan(data)
+        return item.traffic.remaining if item and item.traffic else None
+
+    def attributes(data: OpenClashData) -> dict[str, Any]:
+        item = plan(data)
+        return _subscription_attrs(item) if item else {}
+
+    return FanchmWrtOpenClashSensor(
+        coordinator, entry,
+        key=f"oc_subscription_{key}", name=f"{name} 剩余流量",
+        value_fn=remaining, unit="GB", icon="mdi:gauge",
+        require_api=False, attrs_fn=attributes,
+    )
 
 
 def openclash_binary_sensors(

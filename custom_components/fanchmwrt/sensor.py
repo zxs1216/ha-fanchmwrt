@@ -48,6 +48,7 @@ from .openclash import (
     build_router_diagnostics,
     openclash_sensors,
 )
+from .openclash.entities import openclash_subscription_sensor
 from .sensors import (
     OpenWrtDeviceSensor,
     OpenWrtMwanMetricSensor,
@@ -299,6 +300,23 @@ async def async_setup_entry(
         ]
     )
     async_add_entities(v4_sensors)
+
+    subscription_keys: set[str] = set()
+
+    @callback
+    def _async_discover_subscriptions() -> None:
+        if not openclash.data:
+            return
+        new_sensors = []
+        for sub in openclash.data.subscriptions:
+            if sub.key not in subscription_keys:
+                subscription_keys.add(sub.key)
+                new_sensors.append(openclash_subscription_sensor(openclash, entry, sub))
+        if new_sensors:
+            async_add_entities(new_sensors)
+
+    entry.async_on_unload(openclash.async_add_listener(_async_discover_subscriptions))
+    _async_discover_subscriptions()
 
     tracked_keys: set[str] = set()
 

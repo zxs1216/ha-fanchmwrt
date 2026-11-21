@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+from asyncio import Task
 from dataclasses import dataclass, field
 from datetime import timedelta
+from time import monotonic
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -20,7 +22,7 @@ from ..const import (
     DEFAULT_MIHOMO_PORT,
 )
 from .api import MihomoClient, probe_dns, probe_tcp
-from .subscription import async_fetch_subscription
+from .subscription import Subscription, async_fetch_subscriptions
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,6 +62,7 @@ class OpenClashData:
     sub_used: float | None = None
     sub_remaining: float | None = None
     sub_percent: float | None = None
+    subscriptions: tuple[Subscription, ...] = ()
 
 
 class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
@@ -78,6 +81,7 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
             "username": str(entry.data.get(CONF_USERNAME, "root")),
             "password": str(entry.data.get(CONF_PASSWORD, "") or ""),
         }
+        self._entry = entry
         self.host = host
         self.port = port
         self.secret = secret
@@ -85,7 +89,9 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
         self._rules = 0
         self._version: str | None = None
         self._mode: str | None = None
-        self._subscription: dict[str, float] | None = None
+        self._subscriptions: tuple[Subscription, ...] = ()
+        self._subscription_task: Task[None] | None = None
+        self._next_subscription_check = 0.0
         super().__init__(
             hass,
             _LOGGER,
@@ -94,8 +100,32 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
             update_interval=timedelta(seconds=15),
         )
 
+    async def _async_refresh_subscriptions(self) -> None:
+        subscriptions = await async_fetch_subscriptions(
+            self.hass, self.router_client, self._ssh
+        )
+        if subscriptions is not None:
+            self._subscriptions = subscriptions
+        self._next_subscription_check = monotonic() + (60 if subscriptions is None else 600)
+
     async def _async_update_data(self) -> OpenClashData:
-        data = OpenClashData()
+        if monotonic() >= self._next_subscription_check and (
+            self._subscription_task is None or self._subscription_task.done()
+        ):
+            self._subscription_task = self._entry.async_create_background_task(
+                self.hass, self._async_refresh_subscriptions(), "OpenClash subscriptions"
+            )
+        data = OpenClashData(subscriptions=self._subscriptions)
+        # 原有实体继续表示当前配置，避免自动化读到另一份套餐。
+        traffic = next(
+            (sub.traffic for sub in data.subscriptions if sub.active and sub.traffic),
+            None,
+        )
+        if traffic:
+            data.sub_total = traffic.total
+            data.sub_used = traffic.used
+            data.sub_remaining = traffic.remaining
+            data.sub_percent = traffic.percent
 
         # 诊断探测在 executor 中执行，避免阻塞事件循环
         dns_ok, dns_latency = await self.hass.async_add_executor_job(
@@ -155,19 +185,6 @@ class OpenClashCoordinator(DataUpdateCoordinator[OpenClashData]):
                 self._rules = await self.client.async_get_rule_count()
             except Exception:  # noqa: BLE001
                 pass
-        # 订阅剩余流量：启动初期重试几次，稳定后约 10 分钟刷新一次
-        if self._slow_tick in (1, 3, 6, 10) or self._slow_tick % 40 == 0:
-            info = await async_fetch_subscription(
-                self.hass, self.router_client, self._ssh
-            )
-            if info:
-                self._subscription = info
-        if self._subscription:
-            data.sub_total = self._subscription.get("total")
-            data.sub_used = self._subscription.get("used")
-            data.sub_remaining = self._subscription.get("remaining")
-            data.sub_percent = self._subscription.get("percent")
-
         data.version = self._version
         data.mode = self._mode
         data.rules = self._rules
